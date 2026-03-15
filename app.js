@@ -20,13 +20,22 @@ window.onload = () => {
     }, 2500);
 };
 
-// Function to handle role selection
+// Function to handle role selection and redirect to the correct dashboard
 function selectRole(roleName) {
-    // In a real app, this would save the role to a database or local storage
-    alert(`You selected the ${roleName} role! Redirecting to the ${roleName} Dashboard...`);
+    // In a fully functioning app, you would save this role to a database here.
     
-    // Here you would redirect them to their specific dashboard based on the SRS requirements.
-    // window.location.href = 'farmer_dashboard.html'; 
+    if (roleName === 'Farmer') {
+        // Redirects to the Farmer Dashboard we built
+        window.location.href = 'farmer_dashboard.html';
+        
+    } else if (roleName === 'Buyer') {
+        // Redirects to the Buyer Dashboard we built
+        window.location.href = 'buyer_dashboard.html';
+        
+    } else if (roleName === 'Equipment Owner') {
+         // Redirects to the Equipment Owner Dashboard we built
+        window.location.href = 'equipment_dashboard.html';
+    }
 }
 
 // Quality of Life Feature: Auto-tabbing for OTP inputs
