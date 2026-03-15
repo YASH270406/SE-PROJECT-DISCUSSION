@@ -20,10 +20,17 @@
         <div id="language-screen" class="screen">
             <h2 class="screen-title">Choose Language</h2>
             <p class="screen-subtitle">भाषा चुनें</p>
+            
             <div class="button-group">
-                <button class="primary-btn" onclick="goToScreen('login-screen')">English</button>
-                <button class="primary-btn" onclick="goToScreen('login-screen')">हिंदी (Hindi)</button>
-                <button class="secondary-btn" onclick="goToScreen('login-screen')">मराठी (Marathi)</button>
+                <button class="primary-btn">English</button>
+                <button class="secondary-btn">हिंदी (Hindi)</button>
+                <button class="secondary-btn">मराठी (Marathi)</button>
+            </div>
+
+            <div class="auth-group">
+                <p class="auth-prompt">Get Started</p>
+                <button class="primary-btn full-width" style="margin-bottom: 15px;" onclick="goToScreen('login-screen')">Login</button>
+                <button class="accent-btn full-width" onclick="window.location.href='register.html'">Register</button>
             </div>
         </div>
 
@@ -61,23 +68,20 @@
             
             <div class="role-cards">
                 <div class="role-card" onclick="selectRole('Farmer')">
-                    <!-- <img src="farmer_icon.jpeg" alt="Farmer" onerror="this.src='https://via.placeholder.com/60?text=Farm'"> -->
                     <img src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?q=80&w=400&auto=format&fit=crop" alt="Farmer" onerror="this.src='https://via.placeholder.com/60?text=Farm'">
-                    <a href="farmer_dashboard.html"><h3>Farmer</h3></a>
+                    <h3>Farmer</h3>
                     <p>Sell produce & rent equipment</p>
                 </div>
                 
                 <div class="role-card" onclick="selectRole('Buyer')">
-                    <!-- <img src="buyer_icon.jpeg" alt="Buyer" onerror="this.src='https://via.placeholder.com/60?text=Buy'"> -->
                    <img src="https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=400&auto=format&fit=crop" alt="Buyer" onerror="this.src='https://via.placeholder.com/60?text=Buy'">
-                    <A href="buyer_dashboard.html"><h3>Buyer</h3></A>
+                    <h3>Buyer</h3>
                     <p>Purchase fresh produce</p>
                 </div>
                 
                 <div class="role-card" onclick="selectRole('Equipment Owner')">
-                    <!-- <img src="tractor_icon.jpeg" alt="Equipment" onerror="this.src='https://via.placeholder.com/60?text=Eqp'"> -->
                     <img src="https://images.unsplash.com/photo-1592982537447-6f2a6a0a5523?q=80&w=400&auto=format&fit=crop" alt="Equipment" onerror="this.src='https://via.placeholder.com/60?text=Eqp'">
-                    <a href="equipment_dashboard.html"><h3>Equipment Owner</h3></a>
+                    <h3>Equipment Owner</h3>
                     <p>Rent out your machinery</p>
                 </div>
             </div>
