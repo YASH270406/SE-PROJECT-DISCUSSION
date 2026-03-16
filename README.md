@@ -12,8 +12,8 @@
 
 | Name | Roll Number | Responsibility |
 |------|-------------|---------------|
-| Yash Yadav | 24293916139 | Auth flow, Farmer sell & listings, README |
-| Deepanshu | 24293919105 | Mandi prices, Bid inbox, Buyer browse |
+| Yash Yadav | 24293916139 | Auth flow, Farmer sell & listings |
+| Deepanshu | 24293919105 | Mandi prices, Bid inbox, Buyer browse,README |
 | Shivansh Tripathi | 24293916066 | Inventory, Soil health, Buyer orders |
 | Mayank Agarwal | 24293916106 | Equipment rental, Fleet management |
 | Vishal Kumar | 24293916137 | Offline sync, Notifications, Session guard |
