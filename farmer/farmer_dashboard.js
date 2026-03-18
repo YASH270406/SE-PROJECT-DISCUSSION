@@ -43,8 +43,8 @@ function checkOfflineQueue() {
     }
 }
 
-// Sync the offline data to the server
-function syncOfflineData() {
+// Sync the offline data to the server (UPDATED FOR BACKEND API)
+async function syncOfflineData() {
     if (!navigator.onLine) {
         alert("You are still offline. Please wait for an internet connection to sync.");
         return;
@@ -55,16 +55,30 @@ function syncOfflineData() {
     if (queue.length > 0) {
         console.log(`Syncing ${queue.length} items to database...`);
         
-        // Loop through the queue and send to your backend API
-        queue.forEach(item => {
-            // Placeholder: fetch('/api/sell', { method: 'POST', body: JSON.stringify(item) })
-            console.log("Successfully uploaded:", item.crop);
-        });
-        
-        // Clear queue and update UI
-        localStorage.removeItem('kisanSetuOfflineQueue');
-        checkOfflineQueue(); 
-        alert("Success! All your offline listings have been synced to the market.");
+        try {
+            // Loop through the queue and send to your backend API
+            for (const item of queue) {
+                const response = await fetch('/api/produce/sync', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(item)
+                });
+
+                if (!response.ok) throw new Error("Failed to upload");
+                console.log("Successfully uploaded:", item.crop);
+            }
+            
+            // Clear queue and update UI ONLY if all uploads succeed
+            localStorage.removeItem('kisanSetuOfflineQueue');
+            checkOfflineQueue(); 
+            alert("Success! All your offline listings have been synced to the market.");
+            
+        } catch (error) {
+            console.error("Sync error:", error);
+            alert("There was an issue syncing some items. We will try again later.");
+        }
     }
 }
 
