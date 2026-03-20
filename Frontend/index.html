@@ -44,7 +44,7 @@
                 <input type="tel" id="mobile-input" placeholder="10-digit mobile number" maxlength="10">
             </div>
             
-            <button class="accent-btn full-width" onclick="goToScreen('otp-screen')">Send OTP</button>
+            <button class="accent-btn full-width" onclick="handleLogin()">Send OTP</button>
         </div>
 
         <div id="otp-screen" class="screen">
@@ -52,13 +52,13 @@
             <p class="screen-subtitle">We have sent a 4-digit OTP to your number</p>
             
             <div class="otp-inputs">
-                <input type="text" maxlength="1" class="otp-box">
-                <input type="text" maxlength="1" class="otp-box">
-                <input type="text" maxlength="1" class="otp-box">
-                <input type="text" maxlength="1" class="otp-box">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveToNext(this, null)">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveToNext(this, null)">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveToNext(this, null)">
+                <input type="text" maxlength="1" class="otp-box" onkeyup="moveToNext(this, null)">
             </div>
             
-            <button class="accent-btn full-width" onclick="goToScreen('role-screen')">Verify & Proceed</button>
+            <button class="accent-btn full-width" onclick="handleLoginOTP()">Verify & Proceed</button>
             <p class="resend-text" onclick="goToScreen('login-screen')">Wrong number? Go back.</p>
         </div>
 
