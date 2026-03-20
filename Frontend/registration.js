@@ -66,14 +66,50 @@ function editForm() {
     document.getElementById('form-view').classList.add('active');
 }
 
-// Function to handle the Final Submission
+// Function to handle moving to the OTP screen
 function finalSubmit() {
-    // In a real application, you would send the data (and the image file) to your backend database here.
+    // Switch Views (Hide Preview, Show OTP)
+    document.getElementById('preview-view').classList.remove('active');
     
+    // In some CSS active might be managed differently, but typically adding 'active' works
+    // For inline fallback if 'active' class isn't defined explicitly for display block:
+    const otpView = document.getElementById('otp-view');
+    otpView.classList.add('active');
+    document.getElementById('preview-view').style.display = 'none';
+    otpView.style.display = 'block';
+    
+    const mobile = document.getElementById('mobileNum').value.trim();
+    
+    // Simulate sending OTP to system
+    alert(`System: Verification OTP has been successfully sent to +91 ${mobile}`);
+}
+
+// Function to handle auto-focus for OTP boxes
+function moveToNext(current, nextFieldID) {
+    if (current.value.length >= current.maxLength) {
+        let next = current.nextElementSibling;
+        if (next && next.tagName === 'INPUT') {
+            next.focus();
+        }
+    }
+}
+
+// Function to handle the actual verified submission
+function verifyRegistrationOTP() {
+    // Retrieve details to store in our simulated database
+    const fullName = document.getElementById('prev-name').innerText;
+    let mobile = document.getElementById('prev-mobile').innerText.replace('+91', '').trim();
+    // Sometimes there's a space, ensure clean 10 digit string
+    mobile = mobile.replace(/\s+/g, '');
     const role = document.getElementById('prev-role').innerText;
     
+    // Save to localStorage 'database'
+    let users = JSON.parse(localStorage.getItem('kisan_registered_users')) || {};
+    users[mobile] = { name: fullName, role: role };
+    localStorage.setItem('kisan_registered_users', JSON.stringify(users));
+    
     // Simulate processing time
-    alert(`Success! Profile created for ${role}.\nRedirecting to login page...`);
+    alert(`OTP Verified Successfully!\nAccount created for ${fullName} as ${role}.\nRedirecting to login...`);
     
     // Redirect to the index.html (Phase 1 Auth) page
     window.location.href = 'index.html';
