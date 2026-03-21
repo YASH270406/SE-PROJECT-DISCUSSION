@@ -1,5 +1,5 @@
-// SRS State Machine: Placed -> Verified -> InTransit -> Delivered -> Processing (Escrow Released)
-const STATUS_STAGES = ['Placed', 'Verified', 'InTransit', 'Delivered', 'Processing'];
+// SRS State Machine: Placed -> Confirmed -> InTransit -> Delivered -> Settled (Escrow Released)
+const STATUS_STAGES = ['Placed', 'Confirmed', 'InTransit', 'Delivered', 'Settled'];
 
 // Mock LocalStorage Initialization
 if (!localStorage.getItem('buyerOrders')) {
@@ -42,15 +42,15 @@ function loadOrders() {
         // Generate Stepper HTML
         let timelineHTML = '<ul class="timeline">';
         STATUS_STAGES.forEach((stage, i) => {
-            // Don't show "Processing" in the standard timeline until it happens
-            if (stage === 'Processing' && !isSettled) return; 
+            // Don't show "Settled" in the standard timeline until it happens
+            if (stage === 'Settled' && !isSettled) return; 
             
             let liClass = 'timeline-step';
             if (i < currentStageIdx || isSettled) liClass += ' completed';
             if (i === currentStageIdx && !isSettled) liClass += ' active';
 
             let displayStage = stage;
-            if (stage === 'Processing') displayStage = 'Quality Confirmed (Escrow Released)';
+            if (stage === 'Settled') displayStage = 'Quality Confirmed (Escrow Released)';
 
             timelineHTML += `
                 <li class="${liClass}">
@@ -88,7 +88,7 @@ function loadOrders() {
 function confirmQuality(orderIndex) {
     if(confirm("Confirming quality will release escrow funds to the farmer. Proceed?")) {
         const orders = JSON.parse(localStorage.getItem('buyerOrders'));
-        orders[orderIndex].status = 'Processing'; // Triggers Payment Settlement in backend
+        orders[orderIndex].status = 'Settled'; // Triggers Payment Settlement in backend
         localStorage.setItem('buyerOrders', JSON.stringify(orders));
         loadOrders(); // Re-render
         alert("Escrow funds released via UPI/Bank transfer.");
