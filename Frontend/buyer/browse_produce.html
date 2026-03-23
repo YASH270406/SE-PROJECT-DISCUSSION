@@ -5,6 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KisanSetu | Browse Produce</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="browse_produce_style.css">
+</head>
+<body>
+
+    <header class="hero-header">
+        <div class="header-top">
+            <a href="buyer_dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>Marketplace</h1>
+        </div>
+        <p>Browse fresh harvests directly from verified farmers. Secure exactly what you need at transparent rates.</p>
+    </header>
+
+    <div class="filter-container">
+        <div class="filter-group">
+            <label><i class="fa-solid fa-wheat-awn"></i> Crop</label>
+            <select id="filter-crop" onchange="filterListings()">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,6 +44,15 @@
                 <option value="Wheat">Wheat</option>
                 <option value="Rice">Rice</option>
                 <option value="Tomato">Tomato</option>
+                <option value="Onion">Onion</option>
+                <option value="Potato">Potato</option>
+                <option value="Soyabean">Soyabean</option>
+                <option value="Cauliflower">Cauliflower</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label><i class="fa-solid fa-map-location-dot"></i> State</label>
+            <select id="filter-state" onchange="filterListings()">
                 <option value="Potato">Potato</option>
                 <option value="Onion">Onion</option>
             </select>
@@ -37,6 +64,59 @@
             </select>
         </div>
         <div class="filter-group">
+            <label><i class="fa-solid fa-hand-holding-dollar"></i> Max Price (₹/Qtl)</label>
+            <input type="number" id="filter-price" placeholder="e.g. 3000" onkeyup="filterListings()">
+        </div>
+    </div>
+
+    <div class="listings-wrapper" id="listings-container">
+        <!-- STATIC HARDCODED EXAMPLE CARD -->
+        <div class="listing-card">
+            <div class="card-header">
+                <div class="farmer-info">
+                    <div class="farmer-avatar"><i class="fa-solid fa-user-check"></i></div>
+                    <div>
+                        <div class="farmer-name">Ramesh Kumar</div>
+                        <div class="farmer-location"><i class="fa-solid fa-location-dot"></i> Sehore, Madhya Pradesh</div>
+                    </div>
+                </div>
+                <div class="crop-badge">Wheat</div>
+            </div>
+
+            <div class="card-details">
+                <div class="detail-item">
+                    <span class="detail-label">Quantity</span>
+                    <span class="detail-value">50 Quintal</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Price per unit</span>
+                    <span class="detail-value price">₹2,450 / Qtl</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Harvest Date</span>
+                    <span class="detail-value">25 Mar, 2026</span>
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn-buy" onclick="alert('Static Example - JS Not Loaded')">
+                    <i class="fa-solid fa-cart-shopping"></i> Buy Now
+                </button>
+                <button class="btn-offer" onclick="alert('Static Example - JS Not Loaded')">
+                    <i class="fa-solid fa-handshake"></i> Make Offer
+                </button>
+            </div>
+            
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Action applied!</div>
+
+    <!-- Scripts -->
+    <script src="../states_data.js"></script>
+    <script src="browse_produce.js"></script>
+</body>
+</html>
             <label>Max Price (₹/Quintal)</label>
             <input type="number" id="price-filter" placeholder="e.g. 3000">
         </div>
