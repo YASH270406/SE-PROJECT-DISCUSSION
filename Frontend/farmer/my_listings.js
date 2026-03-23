@@ -65,14 +65,18 @@ function renderListings(listings) {
 }
 
 function deleteListing(id) {
+    // Keeping confirm() as it requires user interaction, 
+    // but using showToast for the result.
     if (confirm('Are you sure you want to delete this draft?')) {
         let listings = JSON.parse(localStorage.getItem('kisansetu_listings'));
         listings = listings.filter(l => l.id !== id);
         localStorage.setItem('kisansetu_listings', JSON.stringify(listings));
-        loadListings(); // refresh UI
+        loadListings();
+        showToast('Listing draft deleted.', 'info');
     }
 }
 
 function editListing(id) {
-    alert('Redirecting to Edit Listing wizard...');
+    // REPLACED ALERT WITH SHARED TOAST
+    showToast('Redirecting to Edit Listing wizard...', 'info');
 }

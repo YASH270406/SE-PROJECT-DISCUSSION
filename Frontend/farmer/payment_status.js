@@ -59,5 +59,6 @@ function renderPayments(orders) {
 }
 
 function downloadInvoice(orderId) {
-    alert(`Generating PDF Invoice for ${orderId}...`);
+    // REPLACED ALERT WITH SHARED TOAST
+    showToast(`Generating PDF Invoice for ${orderId}...`, 'info');
 }
