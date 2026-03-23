@@ -120,6 +120,22 @@
             </div>
         </div>
 
+        <!-- NEW OTP VIEW -->
+        <div id="otp-view" class="view-section" style="display: none;">
+            <h2 class="section-title">Verify Mobile</h2>
+            <p class="helper-text" style="text-align: center; margin-bottom: 20px;">We have sent a 4-digit OTP to your registered number</p>
+            
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 30px;">
+                <input type="text" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem; border: 2px solid #ddd; border-radius: 8px; outline: none;" onkeyup="moveToNext(this, null)">
+                <input type="text" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem; border: 2px solid #ddd; border-radius: 8px; outline: none;" onkeyup="moveToNext(this, null)">
+                <input type="text" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem; border: 2px solid #ddd; border-radius: 8px; outline: none;" onkeyup="moveToNext(this, null)">
+                <input type="text" maxlength="1" style="width: 50px; height: 50px; text-align: center; font-size: 1.5rem; border: 2px solid #ddd; border-radius: 8px; outline: none;" onkeyup="moveToNext(this, null)">
+            </div>
+            
+            <button class="btn-primary" onclick="verifyRegistrationOTP()" style="width: 100%;">Verify OTP & Create Account <i class="fa-solid fa-check"></i></button>
+            <p class="login-link" style="margin-top: 15px;">Didn't receive code? <a href="#" style="color: var(--primary-green);">Resend</a></p>
+        </div>
+
     </div>
 
     <script src="registration.js"></script>
