@@ -44,14 +44,17 @@
             <img src="welcome_illustration.jpeg" alt="Welcome Image" class="header-image"
                 onerror="this.src='https://via.placeholder.com/300x150?text=Welcome+Image'">
             <h2 class="screen-title">Welcome Back</h2>
-            <p class="screen-subtitle">Enter your mobile number to proceed</p>
+            <p class="screen-subtitle">Enter your credentials to securely login</p>
 
+            <div class="input-group" style="margin-bottom: 12px;">
+                <input type="email" id="email-input" placeholder="Registered Email Address" style="padding-left: 15px; width: 100%;">
+            </div>
+            
             <div class="input-group">
-                <span class="country-code">+91</span>
-                <input type="tel" id="mobile-input" placeholder="10-digit mobile number" maxlength="10">
+                <input type="password" id="password-input" placeholder="Password" style="padding-left: 15px; width: 100%;">
             </div>
 
-            <button class="accent-btn full-width" onclick="handleLogin()">Send OTP</button>
+            <button class="accent-btn full-width" onclick="handleLogin()">Secure Login</button>
         </div>
 
         <div id="otp-screen" class="screen">
@@ -103,7 +106,7 @@
 
     </div>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 
 </html>

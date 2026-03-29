@@ -91,7 +91,11 @@ function moveToNext(current, nextFieldID) {
         }
     }
 }*/
-// ─── KisanSetu | Auth Flow — Real OTP via Fast2SMS ───────────────────────────
+// ─── KisanSetu | Auth Flow — Firebase Integration ───────────────────────────
+import { auth, db } from './firebase-config.js';
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
 // Fast2SMS free API — get key at https://www.fast2sms.com
 // Sign up → Dashboard → Dev API → Copy API Key → paste below
 // Free credits: ~100 SMS on signup, enough for demo + evaluation
@@ -103,6 +107,7 @@ function goToScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
 }
+window.goToScreen = goToScreen;
 
 // ── Splash → Language after 2.5s ─────────────────────────────────────────────
 window.onload = () => {
@@ -182,57 +187,61 @@ function getEnteredOTP() {
     return Array.from(boxes).map(b => b.value).join('');
 }
 
-// ── LOGIN: Send OTP ───────────────────────────────────────────────────────────
+// ── LOGIN: Process Authentication ───────────────────────────────────────────
 async function handleLogin() {
-    const mobile = document.getElementById('mobile-input').value.trim();
+    const email = document.getElementById('email-input').value.trim();
+    const password = document.getElementById('password-input').value;
 
-    if (!mobile || mobile.length !== 10 || !/^\d{10}$/.test(mobile)) {
-        showToast('Please enter a valid 10-digit mobile number.', 'error');
+    if (!email || !password) {
+        showToast('Please enter both email and password.', 'error');
         return;
     }
-
-    // Check if user exists
-    const users = JSON.parse(localStorage.getItem('kisan_registered_users')) || {};
-
-    // Demo accounts always work
-    users['9999999999'] = { name: 'Demo Farmer', role: 'Farmer' };
-    users['8888888888'] = { name: 'Demo Buyer', role: 'Buyer' };
-
-    if (!users[mobile]) {
-        showToast('This number is not registered. Please create an account first.', 'error');
-        setTimeout(() => window.location.href = 'registration.html', 1800);
-        return;
-    }
-
-    // Generate and send OTP
-    const otp = generateOTP();
-    storeOTP(mobile, otp);
 
     const btn = document.querySelector('#login-screen .accent-btn');
-    btn.textContent = 'Sending OTP...';
+    const originalText = btn.textContent;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
     btn.disabled = true;
 
-    const result = await sendOTPviaSMS(mobile, otp);
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
-    btn.textContent = 'Send OTP';
-    btn.disabled = false;
+        // Fetch user data from Firestore to get their Role
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            showToast(`Welcome back, ${userData.fullName}!`, 'success');
+            
+            // Route based on role
+            setTimeout(() => {
+                if (userData.role === 'Farmer') {
+                    window.location.href = 'farmer/farmer_dashboard.html';
+                } else if (userData.role === 'Buyer') {
+                    window.location.href = 'buyer/buyer_dashboard.html';
+                } else {
+                    window.location.href = 'equipment_owner/equipment_dashboard.html';
+                }
+            }, 1200);
+        } else {
+            showToast('User profile not found in database.', 'error');
+        }
 
-    if (result.success) {
-        showToast(`OTP sent to +91 ${mobile}`, 'success');
-    } else {
-        // SMS failed — show OTP on screen for demo purposes
-        showToast(`SMS unavailable. Demo OTP: ${otp}`, 'warning');
+    } catch (error) {
+        console.error("Login Error:", error);
+        if (error.code === 'auth/invalid-credential') {
+             showToast('Invalid email or password.', 'error');
+        } else {
+             showToast(error.message, 'error');
+        }
+    } finally {
+        if (btn) {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     }
-
-    // Show mobile number on OTP screen
-    document.querySelector('#otp-screen .screen-subtitle').textContent =
-        `Enter the 4-digit OTP sent to +91 ${mobile}`;
-
-    // Clear OTP boxes
-    document.querySelectorAll('#otp-screen .otp-box').forEach(b => b.value = '');
-
-    goToScreen('otp-screen');
 }
+window.handleLogin = handleLogin;
 
 // ── LOGIN: Verify OTP ─────────────────────────────────────────────────────────
 function handleLoginOTP() {
@@ -283,6 +292,7 @@ function selectRole(roleName) {
         window.location.href = 'equipment_owner/equipment_dashboard.html';
     }
 }
+window.selectRole = selectRole;
 
 // ── OTP box auto-tab ──────────────────────────────────────────────────────────
 function moveToNext(current) {
@@ -295,6 +305,7 @@ function moveToNext(current) {
         if (prev && prev.tagName === 'INPUT') prev.focus();
     }
 }
+window.moveToNext = moveToNext;
 
 // ── Toast utility ─────────────────────────────────────────────────────────────
 function showToast(message, type) {
