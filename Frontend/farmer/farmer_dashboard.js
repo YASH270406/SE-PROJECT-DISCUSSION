@@ -1,23 +1,55 @@
+import { supabase } from '../supabase-config.js';
+
 // Run checks as soon as the dashboard loads
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     updateNetworkIndicator();
     checkOfflineQueue();
+    loadUserProfile();
 });
 
 // Listeners for actual browser network changes
 window.addEventListener('online', () => {
     updateNetworkIndicator();
-    syncOfflineData(); // Auto-sync when internet comes back
+    syncOfflineData(); 
 });
 
 window.addEventListener('offline', () => {
     updateNetworkIndicator();
 });
 
+async function getAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token || ''}`
+    };
+}
+
+async function loadUserProfile() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: profile } = await supabase
+                .from('users')
+                .select('full_name, role')
+                .eq('id', user.id)
+                .single();
+            
+            if (profile) {
+                const greeting = document.querySelector('.greeting');
+                if (greeting) greeting.innerText = `Namaste, ${profile.full_name.split(' ')[0]}!`;
+            }
+        }
+    } catch (err) {
+        console.error("Profile load error:", err);
+    }
+}
+
 // Visually update the top right Online/Offline indicator
 function updateNetworkIndicator() {
     const indicator = document.getElementById('sync-indicator');
-    
+    if (!indicator) return;
+
     if (navigator.onLine) {
         indicator.classList.remove('offline');
         indicator.classList.add('online');
@@ -36,69 +68,53 @@ function checkOfflineQueue() {
     let queue = JSON.parse(localStorage.getItem('kisanSetuOfflineQueue')) || [];
     
     if (queue.length > 0) {
-        banner.style.display = 'flex'; // Show banner
-        bannerText.innerText = `You have ${queue.length} listing(s) waiting to upload.`;
+        if (banner) banner.style.display = 'flex'; 
+        if (bannerText) bannerText.innerText = `You have ${queue.length} listing(s) waiting to upload.`;
     } else {
-        banner.style.display = 'none'; // Hide banner
+        if (banner) banner.style.display = 'none'; 
     }
 }
 
-// Sync the offline data to the server (UPDATED FOR BACKEND API)
+// Sync the offline data to the server (UPDATED FOR SUPABASE AUTH)
 async function syncOfflineData() {
-    if (!navigator.onLine) {
-        alert("You are still offline. Please wait for an internet connection to sync.");
-        return;
-    }
+    if (!navigator.onLine) return;
 
     let queue = JSON.parse(localStorage.getItem('kisanSetuOfflineQueue')) || [];
-    
     if (queue.length > 0) {
-        console.log(`Syncing ${queue.length} items to database...`);
-        
         try {
-            // Loop through the queue and send to your backend API
-            for (const item of queue) {
-                const response = await fetch('/api/produce/sync', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(item)
-                });
+            const headers = await getAuthHeaders();
+            const response = await fetch('/api/produce/sync', {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify({ items: queue }) // Batch sync
+            });
 
-                if (!response.ok) throw new Error("Failed to upload");
-                console.log("Successfully uploaded:", item.crop);
+            if (response.ok) {
+                localStorage.removeItem('kisanSetuOfflineQueue');
+                checkOfflineQueue(); 
+                alert("Success! All your offline listings have been synced.");
             }
-            
-            // Clear queue and update UI ONLY if all uploads succeed
-            localStorage.removeItem('kisanSetuOfflineQueue');
-            checkOfflineQueue(); 
-            alert("Success! All your offline listings have been synced to the market.");
-            
         } catch (error) {
             console.error("Sync error:", error);
-            alert("There was an issue syncing some items. We will try again later.");
         }
     }
 }
+window.syncOfflineData = syncOfflineData;
 
 // Handle the Voice Assistant Button
 function activateVoice() {
     const btn = document.getElementById('voice-btn');
-    
-    // Add the "listening" CSS class
+    if (!btn) return;
+
     btn.classList.add('listening');
     
-    // Simulate a 2-second listening period
     setTimeout(() => {
-        // Remove the class to revert to default styling
         btn.classList.remove('listening');
-        
-        // Prompt the user for a simulation
-        const command = prompt("Simulating Voice Command.\nTry typing: 'Sell 50 quintals of wheat at 2500 rupees'");
-        
+        const command = prompt("Simulating Voice Command.\nTry: 'Sell 50 quintals of wheat at 2500 rupees'");
         if(command) {
-            alert(`Voice command processed: "${command}"\nRedirecting to the Smart Listing wizard...`);
+            alert(`Voice processed: "${command}"\nRedirecting to Smart Listing...`);
+            window.location.href = 'sell_produce.html';
         }
     }, 500);
 }
+window.activateVoice = activateVoice;

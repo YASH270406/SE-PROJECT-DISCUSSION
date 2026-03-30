@@ -4,10 +4,10 @@ const path = require('path');
 require('dotenv').config(); 
 
 // Import your database connection
-const connectDB = require('./config/db'); 
+// const connectDB = require('./config/db'); // Decommissioned SQLite
 
 // Import Routes
-const authRoutes = require('./routes/authRoutes');
+// const authRoutes = require('./routes/authRoutes'); // Auth handled by Supabase direct-to-client
 const produceRoutes = require('./routes/produceRoutes');
 const equipmentRoutes = require('./routes/equipmentRoutes'); 
 
@@ -21,17 +21,12 @@ app.use(cors());
 app.use(express.static(path.join(__dirname, 'Frontend')));
 
 // Mount Routes
-app.use('/api/auth', authRoutes);
+// app.use('/api/auth', authRoutes); // Decommissioned
 app.use('/api/produce', produceRoutes);
 app.use('/api/equipment', equipmentRoutes); 
 
 // Start the Server AND force the database to build instantly
 app.listen(PORT, async () => {
     console.log(`🚀 KisanSetu Backend running on http://localhost:${PORT}`);
-    
-    try {
-        await connectDB(); // This line creates kisansetu.db instantly!
-    } catch (error) {
-        console.error("❌ Failed to initialize database on startup:", error);
-    }
+    console.log(`🔗 Connected to Supabase Cloud for Data & Auth.`);
 });

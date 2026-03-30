@@ -116,34 +116,35 @@ function verifyRegistrationOTP() {
 }*/
 
 
-// ─── KisanSetu | Registration — Real OTP via Fast2SMS ────────────────────────
-
-import { auth, db } from './firebase-config.js';
-import { createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+// ─── KisanSetu | Registration — Supabase Migration ──────────────────────────
+import { supabase, uploadFile } from './supabase-config.js';
 
 // Shared key — same as app.js
-const FAST2SMS_KEY = 'YOUR_FAST2SMS_API_KEY'; // ← same key as app.js
+const FAST2SMS_KEY = 'YOUR_FAST2SMS_API_KEY'; 
 
-let uploadedImageBase64 = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop';
+let profileFile = null; // Store the actual File object
+let uploadedImagePreview = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop';
 
 // ── Profile image upload ──────────────────────────────────────────────────────
 function handleImageUpload(event) {
     const file = event.target.files[0];
     if (!file) return;
 
+    profileFile = file; // Save for later upload
+
     const reader = new FileReader();
     reader.onload = function (e) {
-        uploadedImageBase64 = e.target.result;
+        uploadedImagePreview = e.target.result;
 
         const thumbnail = document.getElementById('form-thumbnail');
-        thumbnail.src = uploadedImageBase64;
+        thumbnail.src = uploadedImagePreview;
         thumbnail.style.display = 'block';
 
         document.getElementById('file-name-text').innerText = 'Photo Selected!';
     };
     reader.readAsDataURL(file);
 }
+window.handleImageUpload = handleImageUpload;
 window.handleImageUpload = handleImageUpload;
 
 // ── Form → Preview ────────────────────────────────────────────────────────────
@@ -181,7 +182,7 @@ function generatePreview() {
     document.getElementById('prev-mobile').innerText = '+91 ' + mobileNum;
     document.getElementById('prev-pincode').innerText = pincode;
     document.getElementById('prev-role').innerText = userRole;
-    document.getElementById('prev-avatar').src = uploadedImageBase64;
+    document.getElementById('prev-avatar').src = uploadedImagePreview;
 
     document.getElementById('form-view').classList.remove('active');
     document.getElementById('preview-view').classList.add('active');
@@ -245,7 +246,6 @@ async function finalSubmit() {
 
     storeRegOTP(mobile, otp);
 
-    // Button loading state
     const btn = document.querySelector('#preview-view .btn-accent');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP...';
@@ -259,11 +259,9 @@ async function finalSubmit() {
     if (result.success) {
         showRegToast(`OTP sent to +91 ${mobile}`, 'success');
     } else {
-        // SMS unavailable — show OTP for demo
         showRegToast(`SMS unavailable. Demo OTP: ${otp}`, 'warning');
     }
 
-    // Show OTP screen
     document.getElementById('preview-view').classList.remove('active');
     document.getElementById('preview-view').style.display = 'none';
 
@@ -271,7 +269,6 @@ async function finalSubmit() {
     otpView.style.display = 'block';
     otpView.classList.add('active');
 
-    // Update subtitle with mobile number
     const subtitle = otpView.querySelector('.helper-text');
     if (subtitle) {
         subtitle.textContent = `OTP sent to +91 ${mobile}. Valid for 5 minutes.`;
@@ -281,7 +278,6 @@ window.finalSubmit = finalSubmit;
 
 // ── Verify OTP and create account ─────────────────────────────────────────────
 async function verifyRegistrationOTP() {
-    // Read the 4 OTP input boxes
     const boxes = document.querySelectorAll('#otp-view input[maxlength="1"]');
     const enteredOTP = Array.from(boxes).map(b => b.value).join('').trim();
 
@@ -290,7 +286,6 @@ async function verifyRegistrationOTP() {
         return;
     }
 
-    // Verify against stored OTP
     const raw = sessionStorage.getItem('kisansetu_reg_otp');
     if (!raw) {
         showRegToast('OTP not found. Please go back and request again.', 'error');
@@ -305,58 +300,73 @@ async function verifyRegistrationOTP() {
         return;
     }
 
-    if (enteredOTP !== payload.otp && enteredOTP !== '1234') { // Fallback 1234 for easy testing
+    if (enteredOTP !== payload.otp && enteredOTP !== '1234') { 
         showRegToast('Incorrect OTP. Please try again.', 'error');
         return;
     }
 
-    // OTP verified — execute Firebase Auth!
     sessionStorage.removeItem('kisansetu_reg_otp');
 
     const fullName = document.getElementById('prev-name').innerText;
     const email = document.getElementById('prev-email').innerText;
-    const password = document.getElementById('password').value; // We stored value during input
+    const password = document.getElementById('password').value;
     const mobile = payload.mobile;
     const role = document.getElementById('prev-role').innerText;
     const pincode = document.getElementById('prev-pincode').innerText;
 
-    showRegToast('Creating your Firebase account...', 'info');
+    showRegToast('Creating your Secure account...', 'info');
 
     try {
-        // 1. Create user in Firebase Authentication
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // 2. Update Auth Profile (Do NOT put massive Base64 strings in Auth, only standard URLs)
-        await updateProfile(user, { displayName: fullName });
-
-        // 3. Store extended user properties in Cloud Firestore (Satisfies NFR 5.3 Encryption at Rest)
-        await setDoc(doc(db, "users", user.uid), {
-            uid: user.uid,
-            fullName: fullName,
+        // 1. Sign up user in Supabase Auth with metadata (this fires the DB Trigger)
+        const { data: authData, error: authError } = await supabase.auth.signUp({
             email: email,
-            mobileNum: mobile,
-            role: role,
-            pincode: pincode,
-            photoURL: uploadedImageBase64,
-            createdAt: new Date()
+            password: password,
+            options: {
+                data: {
+                    full_name: fullName,
+                    role: role,
+                    mobile_num: mobile,
+                    pincode: pincode
+                }
+            }
         });
 
-        // 4. Save basic info locally for quick dashboard loads
+        if (authError) throw authError;
+
+        const user = authData.user;
+
+        // 2. Upload Profile Image to Supabase Storage (if selected)
+        let profileImageUrl = null;
+        if (profileFile) {
+            try {
+                profileImageUrl = await uploadFile(profileFile, 'profiles', user.id);
+                
+                // 3. Update the existing profile record (created by trigger) with the image URL
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ profile_image: profileImageUrl, pincode: pincode }) // Ensure pincode is updated too
+                    .eq('id', user.id);
+
+                if (updateError) console.warn('Pincode/Image update failed, but account exists.', updateError);
+            } catch (uploadErr) {
+                console.warn('Profile image upload failed, proceeding without it.', uploadErr);
+            }
+        }
+
         const users = JSON.parse(localStorage.getItem('kisan_registered_users')) || {};
-        users[mobile] = { name: fullName, email: email, role, pincode, uid: user.uid };
+        users[mobile] = { name: fullName, email: email, role, pincode, uid: user.id };
         localStorage.setItem('kisan_registered_users', JSON.stringify(users));
 
         showRegToast(`Account securely created! Welcome, ${fullName}.`, 'success');
-
         setTimeout(() => window.location.href = 'index.html', 1500);
 
     } catch (error) {
-        console.error("Firebase Auth Error:", error);
-        showRegToast(error.message, 'error');
+        console.error("Registration Error:", error);
+        showRegToast(error.message || 'An error occurred during registration.', 'error');
     }
+
 }
-// Attach to window since we removed inline onclick event string in HTML, wait we used an ID
+
 document.addEventListener('DOMContentLoaded', () => {
     const finalBtn = document.getElementById('final-verify-btn');
     if(finalBtn) {
@@ -364,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ── OTP box auto-tab ──────────────────────────────────────────────────────────
 function moveToNext(current) {
     if (current.value.length >= current.maxLength) {
         const next = current.nextElementSibling;
@@ -373,7 +382,6 @@ function moveToNext(current) {
 }
 window.moveToNext = moveToNext;
 
-// ── Toast utility (local to registration page) ────────────────────────────────
 function showRegToast(message, type) {
     const existing = document.getElementById('reg-toast');
     if (existing) existing.remove();

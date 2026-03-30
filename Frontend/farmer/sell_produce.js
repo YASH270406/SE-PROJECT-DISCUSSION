@@ -1,3 +1,7 @@
+import { supabase, uploadFile } from '../supabase-config.js';
+
+let selectedFiles = []; // Store selected files
+
 document.addEventListener('DOMContentLoaded', function() {
     
     // 1. Image file preview on upload
@@ -6,8 +10,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (fileInput && uploadBox) {
         fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                selectedFiles = files; // Store files for later upload
+                
+                const file = files[0];
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     uploadBox.innerHTML = `<img src="${event.target.result}" style="max-width: 100%; max-height: 120px; border-radius: 8px; object-fit: cover;">`;
@@ -35,9 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Gather form data
             const produceData = {
-                id: Date.now(),
                 crop: document.getElementById('cropName').value,
                 variety: document.getElementById('variety').value,
                 quantity: document.getElementById('quantity').value,
@@ -48,42 +53,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Check connection status
             if (navigator.onLine) {
-                sendLiveToDatabase(produceData); // Online: Send single item to /add
+                sendLiveToDatabase(produceData); 
             } else {
-                saveToOfflineQueue(produceData); // Offline: Save to localStorage
+                saveToOfflineQueue(produceData); 
             }
         });
     }
 });
 
-// 3. Add offline queue array to localStorage
+// Helper to get Auth Token
+async function getAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token || ''}`
+    };
+}
+
 function saveToOfflineQueue(data) {
     let queue = JSON.parse(localStorage.getItem('kisanSetuOfflineQueue')) || [];
-    queue.push(data);
+    queue.push(data); // Note: Offline images are not handled in this basic version
     localStorage.setItem('kisanSetuOfflineQueue', JSON.stringify(queue));
     
-    alert(`You are offline. Your listing for ${data.quantity} ${data.unit} of ${data.crop} is saved and will publish automatically when internet is restored.`);
+    alert(`Listing saved offline. It will publish automatically when internet is restored.`);
     window.location.href = 'farmer_dashboard.html';
 }
 
-// 4. Sync if navigator.onLine is restored
 window.addEventListener('online', async function() {
     let queue = JSON.parse(localStorage.getItem('kisanSetuOfflineQueue')) || [];
-    
     if (queue.length > 0) {
-        console.log(`Internet restored! Syncing ${queue.length} saved listings...`);
-        
         try {
-            // Send the entire array at once to the sync endpoint
-            const response = await fetch('http://localhost:3000/api/produce/sync', {
+            const headers = await getAuthHeaders();
+            const response = await fetch('/api/produce/sync', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({ items: queue }) 
             });
 
             if (response.ok) {
                 localStorage.removeItem('kisanSetuOfflineQueue');
-                alert("Your saved offline listings have been successfully published to the marketplace!");
+                alert("Offline listings published successfully!");
             }
         } catch (error) {
             console.error("Background sync failed:", error);
@@ -91,28 +100,49 @@ window.addEventListener('online', async function() {
     }
 });
 
-// 5. Actual backend API call for LIVE single uploads
 async function sendLiveToDatabase(data) {
     const submitBtn = document.querySelector('.submit-btn');
     const originalText = submitBtn.innerText;
-    submitBtn.innerText = "Publishing...";
+    submitBtn.innerText = "Processing Assets...";
     submitBtn.disabled = true;
 
     try {
-        const response = await fetch('http://localhost:3000/api/produce/add', {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Please log in first.");
+
+        // 1. Upload Images to Supabase Storage
+        let imageUrls = [];
+        if (selectedFiles.length > 0) {
+            submitBtn.innerText = "Uploading Photos...";
+            for (const file of selectedFiles) {
+                const url = await uploadFile(file, 'produce-images', session.user.id);
+                imageUrls.push(url);
+            }
+        }
+
+        // Add images to the payload
+        data.images = imageUrls;
+
+        const headers = await getAuthHeaders();
+        submitBtn.innerText = "Publishing Listing...";
+        const response = await fetch('/api/produce/add', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify(data)
         });
 
-        if (!response.ok) throw new Error("Upload failed");
+        if (!response.ok) {
+            if (response.status === 401) throw new Error("Please log in again.");
+            throw new Error("Upload failed");
+        }
         
-        alert(`Success! Your listing for ${data.quantity} ${data.unit} of ${data.crop} has been published.`);
+        alert(`Success! Your crop has been published with ${imageUrls.length} photos.`);
         window.location.href = 'farmer_dashboard.html';
         
     } catch (error) {
         console.error("Error:", error);
-        alert("Failed to reach server. We will save this offline instead.");
-        saveToOfflineQueue(data); 
+        alert(error.message || "Failed to reach server.");
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
     }
 }

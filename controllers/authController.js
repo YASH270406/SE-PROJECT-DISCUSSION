@@ -1,4 +1,5 @@
 const connectDB = require('../config/db');
+const bcrypt = require('bcrypt');
 
 // 1. REGISTER A NEW USER
 const registerUser = async (req, res) => {
@@ -17,10 +18,14 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Mobile number already registered.' });
         }
 
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
         // Insert new user
         await db.run(
             `INSERT INTO Users (profileImage, fullName, mobileNum, pincode, userRole, password) VALUES (?, ?, ?, ?, ?, ?)`,
-            [profileImage, fullName, mobileNum, pincode, userRole, password] 
+            [profileImage, fullName, mobileNum, pincode, userRole, hashedPassword] 
         );
 
         console.log(`✅ New ${userRole} Registered: ${fullName}`);

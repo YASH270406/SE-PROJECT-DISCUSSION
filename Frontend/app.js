@@ -91,16 +91,12 @@ function moveToNext(current, nextFieldID) {
         }
     }
 }*/
-// ─── KisanSetu | Auth Flow — Firebase Integration ───────────────────────────
-import { auth, db } from './firebase-config.js';
-import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+// ─── KisanSetu | Auth Flow — Supabase Integration ───────────────────────────
 
-// Fast2SMS free API — get key at https://www.fast2sms.com
-// Sign up → Dashboard → Dev API → Copy API Key → paste below
-// Free credits: ~100 SMS on signup, enough for demo + evaluation
+import { supabase } from './supabase-config.js';
 
-const FAST2SMS_KEY = 'YOUR_FAST2SMS_API_KEY'; // ← paste your key here
+// Fast2SMS free API (Keep for mobile flow if needed later)
+const FAST2SMS_KEY = 'YOUR_FAST2SMS_API_KEY'; 
 
 // ── Screen navigation ─────────────────────────────────────────────────────────
 function goToScreen(screenId) {
@@ -116,7 +112,7 @@ window.onload = () => {
 
 // ── OTP Generator ─────────────────────────────────────────────────────────────
 function generateOTP() {
-    return Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit OTP
+    return Math.floor(1000 + Math.random() * 9000).toString(); 
 }
 
 // ── Send OTP via Fast2SMS API ─────────────────────────────────────────────────
@@ -137,51 +133,37 @@ async function sendOTPviaSMS(mobile, otp) {
         });
 
         const result = await response.json();
-
-        if (result.return === true) {
-            return { success: true };
-        } else {
-            console.warn('Fast2SMS response:', result);
-            return { success: false, reason: result.message || 'SMS failed' };
-        }
+        return result.return === true ? { success: true } : { success: false, reason: result.message || 'SMS failed' };
     } catch (err) {
         console.error('Fast2SMS error:', err);
         return { success: false, reason: 'Network error' };
     }
 }
 
-// ── Store OTP in sessionStorage with 5-min expiry ────────────────────────────
 function storeOTP(mobile, otp) {
     const payload = {
         otp,
         mobile,
-        expiresAt: Date.now() + (5 * 60 * 1000) // 5 minutes from now
+        expiresAt: Date.now() + (5 * 60 * 1000) 
     };
     sessionStorage.setItem('kisansetu_pending_otp', JSON.stringify(payload));
 }
 
-// ── Verify OTP entered by user ────────────────────────────────────────────────
 function verifyStoredOTP(enteredOTP) {
     const raw = sessionStorage.getItem('kisansetu_pending_otp');
     if (!raw) return { valid: false, reason: 'No OTP found. Please request again.' };
 
     const payload = JSON.parse(raw);
-
     if (Date.now() > payload.expiresAt) {
         sessionStorage.removeItem('kisansetu_pending_otp');
         return { valid: false, reason: 'OTP has expired. Please request a new one.' };
     }
 
-    if (enteredOTP.trim() !== payload.otp) {
-        return { valid: false, reason: 'Incorrect OTP. Please try again.' };
-    }
-
-    // Valid — clear it so it can't be reused
+    if (enteredOTP.trim() !== payload.otp) return { valid: false, reason: 'Incorrect OTP. Please try again.' };
     sessionStorage.removeItem('kisansetu_pending_otp');
     return { valid: true, mobile: payload.mobile };
 }
 
-// ── Read OTP boxes ─────────────────────────────────────────────────────────────
 function getEnteredOTP() {
     const boxes = document.querySelectorAll('#otp-screen .otp-box');
     return Array.from(boxes).map(b => b.value).join('');
@@ -203,22 +185,36 @@ async function handleLogin() {
     btn.disabled = true;
 
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        // 1. Authenticate with Supabase
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
 
-        // Fetch user data from Firestore to get their Role
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (authError) throw authError;
+
+        const user = authData.user;
+
+        // 2. Fetch user profile from public.users table (NFR-5.3)
+        const { data: userData, error: dbError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
         
-        if (userDoc.exists()) {
-            const userData = userDoc.data();
-            showToast(`Welcome back, ${userData.fullName}!`, 'success');
+        if (dbError) throw dbError;
+
+        if (userData) {
+            showToast(`Welcome back, ${userData.full_name}!`, 'success');
             
-            // Route based on role
+            // 3. Route based on role
             setTimeout(() => {
                 if (userData.role === 'Farmer') {
                     window.location.href = 'farmer/farmer_dashboard.html';
                 } else if (userData.role === 'Buyer') {
                     window.location.href = 'buyer/buyer_dashboard.html';
+                } else if (userData.role === 'Administrator') {
+                    window.location.href = 'admin/admin_dashboard.html';
                 } else {
                     window.location.href = 'equipment_owner/equipment_dashboard.html';
                 }
@@ -229,11 +225,7 @@ async function handleLogin() {
 
     } catch (error) {
         console.error("Login Error:", error);
-        if (error.code === 'auth/invalid-credential') {
-             showToast('Invalid email or password.', 'error');
-        } else {
-             showToast(error.message, 'error');
-        }
+        showToast(error.message || 'Invalid email or password.', 'error');
     } finally {
         if (btn) {
             btn.textContent = originalText;
@@ -246,51 +238,40 @@ window.handleLogin = handleLogin;
 // ── LOGIN: Verify OTP ─────────────────────────────────────────────────────────
 function handleLoginOTP() {
     const enteredOTP = getEnteredOTP();
-
     if (enteredOTP.length < 4) {
         showToast('Please enter the complete 4-digit OTP.', 'error');
         return;
     }
 
     const result = verifyStoredOTP(enteredOTP);
-
     if (!result.valid) {
         showToast(result.reason, 'error');
-        // Shake the OTP boxes for visual feedback
         document.querySelector('.otp-inputs').style.animation = 'shake 0.3s ease';
         setTimeout(() => document.querySelector('.otp-inputs').style.animation = '', 300);
         return;
     }
 
-    // OTP valid — get user details and redirect
+    // OTP valid locally (for now) — find local user
     const users = JSON.parse(localStorage.getItem('kisan_registered_users')) || {};
-    users['9999999999'] = { name: 'Demo Farmer', role: 'Farmer' };
-    users['8888888888'] = { name: 'Demo Buyer', role: 'Buyer' };
-
     const user = users[result.mobile];
 
-    showToast(`Welcome back, ${user.name}!`, 'success');
-
-    setTimeout(() => {
-        if (user.role === 'Farmer') {
-            window.location.href = 'farmer/farmer_dashboard.html';
-        } else if (user.role === 'Buyer') {
-            window.location.href = 'buyer/buyer_dashboard.html';
-        } else {
-            window.location.href = 'equipment_owner/equipment_dashboard.html';
-        }
-    }, 1200);
+    if (user) {
+        showToast(`Welcome back, ${user.name}!`, 'success');
+        setTimeout(() => {
+            if (user.role === 'Farmer') window.location.href = 'farmer/farmer_dashboard.html';
+            else if (user.role === 'Buyer') window.location.href = 'buyer/buyer_dashboard.html';
+            else if (user.role === 'Administrator') window.location.href = 'admin/admin_dashboard.html';
+            else window.location.href = 'equipment_owner/equipment_dashboard.html';
+        }, 1200);
+    }
 }
 
 // ── Role selection (from role screen) ────────────────────────────────────────
 function selectRole(roleName) {
-    if (roleName === 'Farmer') {
-        window.location.href = 'farmer/farmer_dashboard.html';
-    } else if (roleName === 'Buyer') {
-        window.location.href = 'buyer/buyer_dashboard.html';
-    } else if (roleName === 'Equipment Owner') {
-        window.location.href = 'equipment_owner/equipment_dashboard.html';
-    }
+    if (roleName === 'Farmer') window.location.href = 'farmer/farmer_dashboard.html';
+    else if (roleName === 'Buyer') window.location.href = 'buyer/buyer_dashboard.html';
+    else if (roleName === 'Administrator') window.location.href = 'admin/admin_dashboard.html';
+    else if (roleName === 'Equipment Owner') window.location.href = 'equipment_owner/equipment_dashboard.html';
 }
 window.selectRole = selectRole;
 
@@ -312,13 +293,7 @@ function showToast(message, type) {
     const existing = document.getElementById('ks-toast');
     if (existing) existing.remove();
 
-    const colors = {
-        success: '#2e7d32',
-        error: '#d32f2f',
-        warning: '#e65100',
-        info: '#1565c0'
-    };
-
+    const colors = { success: '#2e7d32', error: '#d32f2f', warning: '#e65100', info: '#1565c0' };
     const toast = document.createElement('div');
     toast.id = 'ks-toast';
     toast.textContent = message;
