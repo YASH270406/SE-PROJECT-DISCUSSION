@@ -8,6 +8,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="registration_style.css">
+
+    <style>
+        /* ── Voice Button — Registration Page ── */
+        .voice-fab {
+            position: fixed;
+            bottom: 28px;
+            right: 22px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2e7d32, #66bb6a);
+            border: none;
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            box-shadow: 0 4px 18px rgba(46, 125, 50, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .voice-fab:active { transform: scale(0.91); }
+        .voice-fab.listening {
+            background: linear-gradient(135deg, #d32f2f, #ef5350);
+            animation: regMicPulse 1s infinite;
+        }
+        @keyframes regMicPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.5); }
+            70%  { box-shadow: 0 0 0 14px rgba(211, 47, 47, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+        }
+    </style>
 </head>
 
 <body>
@@ -117,7 +150,7 @@
                 <div class="preview-details">
                     <div class="detail-row">
                         <span class="detail-label">Email:</span>
-                        <span class="detail-value" id="prev-email">user@email.com</span>
+                        <span class="detail-value" id="prev-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9eebedfbecdefbf3fff7f2b0fdf1f3">[email&#160;protected]</a></span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Mobile:</span>
@@ -166,12 +199,26 @@
             <button class="btn-primary" id="final-verify-btn" style="width: 100%;">Verify OTP & Create
                 Account <i class="fa-solid fa-check"></i></button>
             <p class="login-link" style="margin-top: 15px;">Didn't receive code? <a href="#"
-                    style="color: var(--primary-green);">Resend</a></p>
+                    style="color: var(--primary-green);">Resend</</a></p>
         </div>
 
     </div>
 
     <script type="module" src="registration.js"></script>
-</body>
 
+    <!-- [NFR-5.4] Floating voice FAB — always accessible on registration page -->
+    <button class="voice-fab" id="reg-voice-btn" onclick="handleRegVoiceBtn()" title="Voice commands — tap to speak">
+        <i class="fa-solid fa-microphone"></i>
+    </button>
+
+    <script>
+        function handleRegVoiceBtn() {
+            if (typeof window.startVoiceRegistration === 'function') {
+                window.startVoiceRegistration();
+            } else {
+                alert('Voice commands are not available in this browser.\nPlease use Chrome or Edge.');
+            }
+        }
+    </script>
+</body>
 </html>
