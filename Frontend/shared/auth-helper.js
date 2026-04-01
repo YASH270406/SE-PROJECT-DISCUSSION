@@ -1,8 +1,8 @@
 import { supabase } from '../supabase-config.js';
 
 /**
- * Standardizes the "Namaste, User" greeting and "Logout" functionality
- * across all role-based dashboards.
+ * Standardizes the greeting, profile image, location and Logout functionality
+ * across all role-based dashboards. Pulls real data from Supabase `users` table.
  */
 export async function initializeDashboard(role) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -12,14 +12,14 @@ export async function initializeDashboard(role) {
         return;
     }
 
-    // 1. Attempt to fetch real profile from 'profiles' table
+    // 1. Attempt to fetch real profile from 'users' table (includes profile_image & pincode)
     let profile = null;
     const CACHE_KEY = `ks_profile_${user.id}`;
 
     try {
         const { data, error } = await supabase
-            .from('profiles')
-            .select('full_name, role')
+            .from('users')
+            .select('full_name, role, profile_image, pincode')
             .eq('id', user.id)
             .single();
 
@@ -40,17 +40,20 @@ export async function initializeDashboard(role) {
         }
     }
 
+    // Fallback to auth metadata if DB profile is missing
     if (!profile || !profile.full_name || profile.full_name === 'User') {
         const metadata = user.user_metadata;
         if (metadata && metadata.full_name) {
             profile = { 
                 full_name: metadata.full_name, 
                 role: metadata.role || role,
+                pincode: metadata.pincode || null,
+                profile_image: null,
                 isFromMetadata: true 
             };
         } else {
             console.error("No profile or metadata found.");
-            profile = { full_name: 'User', role: role };
+            profile = { full_name: 'User', role: role, profile_image: null, pincode: null };
         }
     }
 
@@ -61,7 +64,7 @@ export async function initializeDashboard(role) {
         return;
     }
 
-    // 2. Update UI Elements
+    // 2. Update Greeting
     const greeting = document.querySelector('.greeting');
     if (greeting) {
         const firstName = profile.full_name.split(' ')[0];
@@ -75,10 +78,35 @@ export async function initializeDashboard(role) {
         }
     }
 
-    // Note: Profile image handled if column exists (omitted if not in schema yet)
+    // 3. Update Profile Picture with user's registered image
+    const profilePic = document.querySelector('.profile-pic');
+    if (profilePic) {
+        if (profile.profile_image) {
+            profilePic.src = profile.profile_image;
+            profilePic.onerror = function () {
+                // Fallback to a generated avatar if URL is broken
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=2e7d32&color=fff&size=100&rounded=true&bold=true`;
+                this.onerror = null;
+            };
+        } else {
+            // No image uploaded — use name-based avatar
+            profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.full_name)}&background=2e7d32&color=fff&size=100&rounded=true&bold=true`;
+            profilePic.onerror = null;
+        }
+        profilePic.alt = profile.full_name;
+        profilePic.title = profile.full_name;
+    }
 
+    // 4. Update Location from pincode (show pincode-based location)
+    const locationEl = document.querySelector('.location');
+    if (locationEl && profile.pincode) {
+        const icon = locationEl.querySelector('i');
+        locationEl.innerHTML = '';
+        if (icon) locationEl.appendChild(icon);
+        locationEl.append(` Pincode: ${profile.pincode}`);
+    }
 
-    // 3. Inject Logout Button if not present
+    // 5. Inject Logout Button if not present
     setupLogoutButton();
 
     return { user, profile };
