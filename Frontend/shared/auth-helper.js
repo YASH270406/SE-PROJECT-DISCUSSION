@@ -40,11 +40,18 @@ export async function initializeDashboard(role) {
         }
     }
 
-    if (!profile) {
-        console.error("No profile found online or in cache.");
-        // We still allow the session to proceed if user exists, 
-        // fallback to dummy name if absolutely necessary
-        profile = { full_name: 'User', role: role };
+    if (!profile || !profile.full_name || profile.full_name === 'User') {
+        const metadata = user.user_metadata;
+        if (metadata && metadata.full_name) {
+            profile = { 
+                full_name: metadata.full_name, 
+                role: metadata.role || role,
+                isFromMetadata: true 
+            };
+        } else {
+            console.error("No profile or metadata found.");
+            profile = { full_name: 'User', role: role };
+        }
     }
 
     // Security Check: Verify role matches dashboard (if not cached/offline)
@@ -73,6 +80,8 @@ export async function initializeDashboard(role) {
 
     // 3. Inject Logout Button if not present
     setupLogoutButton();
+
+    return { user, profile };
 }
 
 function setupLogoutButton() {
@@ -89,10 +98,20 @@ function setupLogoutButton() {
     logoutBtn.title = 'Secure Logout';
     
     logoutBtn.onclick = async () => {
-        const confirmLogout = confirm("Are you sure you want to logout?");
+        const confirmLogout = confirm("Are you sure you want to logout? This will also clear all cached profile data.");
         if (confirmLogout) {
+            // 1. Sign out from Supabase (Clears session)
             await supabase.auth.signOut();
-            window.location.href = '../index.html';
+            
+            // 2. Forcefully wipe all local storage to ensure identity leaks are avoided (NFR-5.3)
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // 3. Forcefully return to the main landing page (Absolute Root index.html)
+            // This is the most reliable way to handle logouts from any folder depth
+            setTimeout(() => {
+                window.location.href = '/index.html';
+            }, 100);
         }
     };
 

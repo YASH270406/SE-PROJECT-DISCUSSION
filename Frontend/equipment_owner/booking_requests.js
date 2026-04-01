@@ -125,9 +125,10 @@ async function updateStatus(id, status) {
 
     try {
         // Fetch booking details for notification (FR-7.1)
+        // Including Farmer's name so owner can see it in their notification
         const { data: booking } = await supabase
             .from('bookings')
-            .select('farmer_id, equipment:equipment_id(name)')
+            .select('farmer_id, profiles!farmer_id(full_name), equipment:equipment_id(name)')
             .eq('id', id)
             .single();
 
@@ -139,12 +140,24 @@ async function updateStatus(id, status) {
         if (error) throw error;
 
         if (booking) {
-            const title = status === 'Approved' ? '✅ Booking Approved!' : '❌ Booking Rejected';
-            const msg = status === 'Approved' 
+            const farmerName = booking.profiles?.full_name || 'Farmer';
+            const { data: { user } } = await supabase.auth.getUser();
+
+            // 1. Notification FOR THE FARMER (Original)
+            const farmerTitle = status === 'Approved' ? '✅ Booking Approved!' : '❌ Booking Rejected';
+            const farmerMsg = status === 'Approved' 
                 ? `Owner has approved your booking for ${booking.equipment.name}.`
                 : `Owner has declined your request for ${booking.equipment.name}.`;
             
-            await sendSystemNotification(booking.farmer_id, title, msg, status === 'Approved' ? 'success' : 'error');
+            await sendSystemNotification(booking.farmer_id, farmerTitle, farmerMsg, status === 'Approved' ? 'success' : 'error');
+
+            // 2. Notification FOR THE OWNER (Improved Sync)
+            const ownerTitle = status === 'Approved' ? '🛠️ Booking Confirmed!' : '🚫 Booking Declined';
+            const ownerMsg = status === 'Approved'
+                ? `You have approved ${farmerName}'s booking for ${booking.equipment.name}.`
+                : `You have declined ${farmerName}'s request for ${booking.equipment.name}.`;
+
+            await sendSystemNotification(user.id, ownerTitle, ownerMsg, 'info');
         }
 
         alert(`Booking ${status} Successfully!`);

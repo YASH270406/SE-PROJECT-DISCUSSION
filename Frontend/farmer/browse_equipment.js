@@ -125,8 +125,8 @@ async function submitBooking() {
             .insert({
                 equipment_id: equipId,
                 farmer_id: user.id,
-                start_date: start,
-                end_date: end,
+                start_date: start.toISOString(),
+                end_date: end.toISOString(),
                 total_cost: totalCost,
                 status: 'Pending'
             });

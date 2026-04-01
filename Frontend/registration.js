@@ -709,18 +709,23 @@ async function verifyRegistrationOTP() {
         if (profileFile) {
             try {
                 profileImageUrl = await uploadFile(profileFile, 'profiles', user.id);
-                
-                // 3. Update profile with image
-                const { error: updateError } = await supabase
-                    .from('users')
-                    .update({ profile_image: profileImageUrl, pincode: pincode })
-                    .eq('id', user.id);
-
-                if (updateError) console.warn('Pincode/Image update failed.', updateError);
             } catch (uploadErr) {
                 console.warn('Profile image upload failed.', uploadErr);
             }
         }
+
+        // 3. Final Profile Sync (Explicitly set name and pincode)
+        // This ensures identity is NEVER lost / falls back to 'User'
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+                full_name: fullName, 
+                pincode: pincode,
+                profile_image: profileImageUrl 
+            })
+            .eq('id', user.id);
+
+        if (updateError) console.warn('Final profile sync failed.', updateError);
 
         // Local backup
         const users = JSON.parse(localStorage.getItem('kisan_registered_users')) || {};

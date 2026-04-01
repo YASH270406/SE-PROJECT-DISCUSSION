@@ -1,8 +1,11 @@
-const supabase = require('../config/supabase');
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
 /**
- * Middleware to verify Supabase User JWT
- * Satisfies NFR-5.3 (Security & Authentication)
+ * Middleware to verify Supabase User JWT and create a per-request client (NFR-5.3)
  */
 const verifySupabaseToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -14,14 +17,26 @@ const verifySupabaseToken = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
 
     try {
-        const { data: { user }, error } = await supabase.auth.getUser(token);
+        // 1. Create a request-specific client using the User's JWT
+        const userSupabase = createClient(supabaseUrl, supabaseKey, {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        });
+
+        // 2. Security Check: Actually verify the token with Supabase
+        const { data: { user }, error } = await userSupabase.auth.getUser();
 
         if (error || !user) {
             return res.status(401).json({ success: false, message: 'Invalid or expired session.' });
         }
 
-        // Attach user info to the request for controller access
+        // 3. Attach both user and client to the request
         req.user = user;
+        req.supabase = userSupabase;
+        
         next();
     } catch (err) {
         console.error('Auth Middleware Error:', err);

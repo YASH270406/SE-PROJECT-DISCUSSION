@@ -1,4 +1,5 @@
 import { supabase } from '../../supabase-config.js';
+import { initializeDashboard } from '../../shared/auth-helper.js';
 
 'use strict';
 
@@ -14,11 +15,10 @@ let calYear, calMonth;
 // API Base URL (Relative for deployment)
 const API_BASE = '/api/equipment';
 
-/* ══════════════════════════════════════════
-   INIT & DATA FETCHING
-   (NFR-5.3: Uses Auth Sessions)
-══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Initialize Auth and Profile (NFR-5.3)
+    const { user } = await initializeDashboard('Farmer');
+
     const now = new Date();
     calYear  = now.getFullYear();
     calMonth = now.getMonth();
@@ -31,6 +31,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await fetchEquipment();
     await fetchBookings();
+
+    // 4. Real-time Status Sync (FR-7.1)
+    if (user) {
+        supabase
+            .channel('farmer-bookings')
+            .on('postgres_changes', { 
+                event: 'UPDATE', 
+                schema: 'public', 
+                table: 'bookings', 
+                filter: `farmer_id=eq.${user.id}` 
+            }, (payload) => {
+                console.log('Booking status updated!', payload);
+                fetchBookings(); // Refresh UI instantly
+                showToast('info', 'Status Updated!', `Booking #${payload.new.id.substring(0,8)} is now: ${payload.new.status}`);
+            })
+            .subscribe();
+    }
 
     if (typeof populateCalSelect === 'function') populateCalSelect();
     if (typeof renderCalendar === 'function') renderCalendar();
