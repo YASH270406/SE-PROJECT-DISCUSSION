@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KisanSetu | System Logs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin_dashboard_style.css">
+    <link rel="stylesheet" href="../shared/common.css">
+    <style>
+        .admin-content { padding: 20px; }
+
+        /* Filter bar */
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .filter-select, .filter-input {
+            padding: 9px 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            outline: none;
+            color: #333;
+        }
+        .filter-select { cursor: pointer; }
+        .filter-input  { flex: 1; }
+        .filter-input:focus, .filter-select:focus { border-color: #4a148c; }
+
+        /* Log entries */
+        .log-entry {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.04);
+            border: 1px solid #eaeaea;
+            border-left: 4px solid #e0e0e0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .log-entry.user    { border-left-color: #4a148c; }
+        .log-entry.listing { border-left-color: #ef6c00; }
+        .log-entry.dispute { border-left-color: #d32f2f; }
+        .log-entry.system  { border-left-color: #1565c0; }
+
+        .log-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .icon-user    { background: #f3e5f5; color: #4a148c; }
+        .icon-listing { background: #fff3e0; color: #ef6c00; }
+        .icon-dispute { background: #ffebee; color: #d32f2f; }
+        .icon-system  { background: #e3f2fd; color: #1565c0; }
+
+        .log-body { flex: 1; min-width: 0; }
+        .log-action {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0 0 2px 0;
+        }
+        .log-details {
+            font-size: 0.78rem;
+            color: #666;
+            margin: 0 0 3px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .log-time {
+            font-size: 0.72rem;
+            color: #aaa;
+        }
+
+        .action-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .badge-BAN_USER         { background: #ffebee; color: #d32f2f; }
+        .badge-UNBAN_USER       { background: #e8f5e9; color: #2e7d32; }
+        .badge-CHANGE_ROLE      { background: #f3e5f5; color: #4a148c; }
+        .badge-APPROVE_LISTING  { background: #e8f5e9; color: #2e7d32; }
+        .badge-REJECT_LISTING   { background: #ffebee; color: #d32f2f; }
+        .badge-RESOLVE_DISPUTE  { background: #e8f5e9; color: #2e7d32; }
+        .badge-ESCALATE_DISPUTE { background: #f3e5f5; color: #4a148c; }
+        .badge-SYSTEM           { background: #e3f2fd; color: #1565c0; }
+
+        /* Summary header */
+        .stats-summary {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        .page-btn {
+            padding: 7px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .page-btn:hover:not(:disabled) { background: #4a148c; color: white; border-color: #4a148c; }
+        .page-btn:disabled { opacity: 0.4; cursor: default; }
+        .page-info { font-size: 0.8rem; color: #666; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        /* Export button */
+        .export-btn {
+            padding: 9px 14px;
+            background: #4a148c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .export-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+
+        <header class="dashboard-header" style="background: linear-gradient(135deg, #1565c0, #0d47a1); color: white; padding: 25px 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <a href="admin_dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+                <div>
+                    <h1 style="font-size: 1.5rem;">System Logs</h1>
+                    <p style="font-size: 0.85rem; opacity: 0.9;">Immutable audit trail — all admin actions</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-content">
+
+            <div class="stats-summary" id="log-stats">Loading audit logs...</div>
+
+            <!-- Filter row (type filter + search) -->
+            <div class="filter-row">
+                <select class="filter-select" id="type-filter" onchange="applyFilters()">
+                    <option value="all">All Actions</option>
+                    <option value="user">User Actions</option>
+                    <option value="listing">Listing Actions</option>
+                    <option value="dispute">Dispute Actions</option>
+                </select>
+                <input class="filter-input" type="text" id="search-filter"
+                    placeholder="Search logs..." oninput="applyFilters()">
+                <!-- FIX: CSV export of audit trail (SRS Section 6.4.2.4 - tamper-proof audit) -->
+                <button class="export-btn" onclick="exportCSV()">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+
+            <div id="logs-container">
+                <p style="text-align: center; color: #999;">Loading...</p>
+            </div>
+
+            <div class="pagination">
+                <button class="page-btn" id="prev-btn" onclick="changePage(-1)" disabled>
+                    <i class="fa-solid fa-chevron-left"></i> Prev
+                </button>
+                <span class="page-info" id="page-info">Page 1</span>
+                <button class="page-btn" id="next-btn" onclick="changePage(1)">
+                    Next <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <p style="text-align: center; color: #666; font-size: 0.82rem; margin-top: 16px;">
+                <i class="fa-solid fa-lock"></i> Logs are immutable and tamper-proof per SRS §6.4.2.4
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from '../supabase-config.js';
+
+        // This page implements SRS Section 6.4.2.4: Immutable Audit Trail
+        // and Section 4.7 FR-7.2: Transaction History log accessible to admin
+
+        const PAGE_SIZE = 20;
+        let allLogs    = [];
+        let filtered   = [];
+        let currentPage = 1;
+
+        window.applyFilters = applyFilters;
+        window.changePage   = changePage;
+        window.exportCSV    = exportCSV;
+
+        // Action -> category mapping for icon/color
+        const ACTION_CATEGORY = {
+            BAN_USER: 'user', UNBAN_USER: 'user', CHANGE_ROLE: 'user',
+            APPROVE_LISTING: 'listing', REJECT_LISTING: 'listing',
+            RESOLVE_DISPUTE: 'dispute', ESCALATE_DISPUTE: 'dispute',
+        };
+        const ACTION_ICON = {
+            user: 'fa-user-shield', listing: 'fa-seedling',
+            dispute: 'fa-scale-balanced', system: 'fa-server'
+        };
+        const ACTION_LABEL = {
+            BAN_USER: 'User Banned', UNBAN_USER: 'User Unbanned', CHANGE_ROLE: 'Role Changed',
+            APPROVE_LISTING: 'Listing Approved', REJECT_LISTING: 'Listing Rejected',
+            RESOLVE_DISPUTE: 'Dispute Resolved', ESCALATE_DISPUTE: 'Dispute Escalated',
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await fetchLogs();
+        });
+
+        async function fetchLogs() {
+            try {
+                const { data, error } = await supabase
+                    .from('audit_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allLogs  = data || [];
+                filtered = [...allLogs];
+                document.getElementById('log-stats').innerHTML =
+                    `<strong>${allLogs.length}</strong> audit entries recorded. All actions are permanently stored.`;
+
+                renderPage();
+
+            } catch (err) {
+                console.error('Fetch logs error:', err);
+                document.getElementById('logs-container').innerHTML =
+                    '<p style="color:red; text-align:center;">Failed to load audit logs.</p>';
+            }
+        }
+
+        function applyFilters() {
+            const typeFilter   = document.getElementById('type-filter').value;
+            const searchQuery  = document.getElementById('search-filter').value.toLowerCase();
+
+            filtered = allLogs.filter(log => {
+                const cat = ACTION_CATEGORY[log.action] || 'system';
+                const matchesType   = typeFilter === 'all' || cat === typeFilter;
+                const matchesSearch =
+                    (log.action || '').toLowerCase().includes(searchQuery) ||
+                    (log.details || '').toLowerCase().includes(searchQuery) ||
+                    (log.target_id || '').toLowerCase().includes(searchQuery);
+                return matchesType && matchesSearch;
+            });
+
+            currentPage = 1;
+            renderPage();
+        }
+
+        function renderPage() {
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const page  = filtered.slice(start, start + PAGE_SIZE);
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+            document.getElementById('page-info').textContent =
+                `Page ${currentPage} of ${totalPages} (${filtered.length} entries)`;
+            document.getElementById('prev-btn').disabled = currentPage <= 1;
+            document.getElementById('next-btn').disabled = currentPage >= totalPages;
+
+            const container = document.getElementById('logs-container');
+
+            if (!filtered.length) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clipboard-list" style="font-size:2rem; margin-bottom:10px;"></i>
+                        <br>No log entries match this filter.
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = page.map(log => {
+                const cat    = ACTION_CATEGORY[log.action] || 'system';
+                const icon   = ACTION_ICON[cat];
+                const label  = ACTION_LABEL[log.action] || log.action || 'System Event';
+                const ts     = log.created_at
+                    ? new Date(log.created_at).toLocaleString('en-IN')
+                    : 'Unknown time';
+                const badgeClass = `badge-${log.action || 'SYSTEM'}`;
+
+                return `
+                <div class="log-entry ${cat}">
+                    <div class="log-icon icon-${cat}">
+                        <i class="fa-solid ${icon}"></i>
+                    </div>
+                    <div class="log-body">
+                        <p class="log-action">
+                            ${escapeHtml(label)}
+                            <span class="action-badge ${badgeClass}">${log.action || 'SYSTEM'}</span>
+                        </p>
+                        <p class="log-details">
+                            ${log.target_type ? `Target: ${log.target_type} #${(log.target_id || '').slice(0, 8)}` : ''}
+                            ${log.details ? ' — ' + escapeHtml(log.details) : ''}
+                        </p>
+                        <span class="log-time"><i class="fa-regular fa-clock"></i> ${ts}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function changePage(dir) {
+            const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+            currentPage = Math.max(1, Math.min(totalPages, currentPage + dir));
+            renderPage();
+            document.querySelector('.admin-content').scrollTop = 0;
+        }
+
+        // FIX: CSV export of audit trail (SRS Section 6.4.2.4 - tamper-proof for compliance)
+        function exportCSV() {
+            const headers = ['Action', 'Target Type', 'Target ID', 'Details', 'Timestamp'];
+            const rows = filtered.map(log => [
+                log.action || '',
+                log.target_type || '',
+                log.target_id || '',
+                (log.details || '').replace(/,/g, ';'),
+                log.created_at || ''
+            ]);
+            const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url  = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `kisansetu_audit_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>
