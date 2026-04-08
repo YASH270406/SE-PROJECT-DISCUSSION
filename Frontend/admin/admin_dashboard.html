@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,210 +22,189 @@
             text-align: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.06);
             border-top: 3px solid var(--admin-purple);
+            cursor: pointer;
+            transition: transform 0.15s;
         }
+        .stat-card:hover { transform: translateY(-2px); }
         .stat-card.orange { border-top-color: var(--accent-orange); }
         .stat-card.red    { border-top-color: #d32f2f; }
-        .stat-card .stat-num {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        .stat-card .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-light);
-            margin-top: 2px;
-        }
+        .stat-num   { font-size: 1.5rem; font-weight: 600; color: var(--text-dark); min-height: 2rem; }
+        .stat-label { font-size: 0.7rem; color: var(--text-light); margin-top: 2px; }
         .skeleton {
-            background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
+            background: linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%);
             background-size: 200% 100%;
             animation: shimmer 1.2s infinite;
-            border-radius: 4px;
-            height: 1.4rem;
-            width: 60%;
-            margin: 0 auto;
+            border-radius: 4px; height: 1.5rem; width: 55%; margin: 2px auto 0;
         }
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     </style>
 </head>
-
 <body>
-    <div class="app-container">
+<div class="app-container">
 
-        <header class="dashboard-header">
-            <div class="user-info">
-                <img src="../images/logo.jpeg" alt="Admin Profile" class="profile-pic"
-                    onerror="this.src='https://placehold.co/50?text=Admin'">
-                <div>
-                    <h2 class="greeting">Super User</h2>
-                    <p class="location"><i class="fa-solid fa-shield-halved"></i> Global Administrator</p>
-                </div>
-            </div>
-            <!-- Auth Helper will inject Logout Button here -->
-        </header>
-
-        <!-- FIX: Dynamic stats widget (was hardcoded) -->
-        <div class="stats-widget">
-            <div class="stats-info">
-                <h3 id="uptime-stat">99.9% <i class="fa-solid fa-server" style="font-size: 1.2rem; margin-left: 10px;"></i></h3>
-                <p id="active-users-stat">Loading platform stats...</p>
+    <header class="dashboard-header">
+        <div class="user-info">
+            <img src="../images/logo.jpeg" alt="Admin" class="profile-pic"
+                 onerror="this.src='https://placehold.co/50?text=A'">
+            <div>
+                <h2 class="greeting" id="admin-name">Super User</h2>
+                <p class="location"><i class="fa-solid fa-shield-halved"></i> Global Administrator</p>
             </div>
         </div>
+    </header>
 
-        <!-- FIX: Live DB stat cards (was missing entirely) -->
-        <div class="live-stats-grid">
-            <div class="stat-card">
-                <div class="stat-num" id="count-users"><div class="skeleton"></div></div>
-                <div class="stat-label">Total Users</div>
-            </div>
-            <div class="stat-card orange">
-                <div class="stat-num" id="count-listings"><div class="skeleton"></div></div>
-                <div class="stat-label">Pending Listings</div>
-            </div>
-            <div class="stat-card red">
-                <div class="stat-num" id="count-disputes"><div class="skeleton"></div></div>
-                <div class="stat-label">Open Disputes</div>
-            </div>
+    <div class="stats-widget">
+        <div class="stats-info">
+            <h3>99.9% <i class="fa-solid fa-server" style="font-size:1.2rem;margin-left:10px;"></i></h3>
+            <p id="active-users-stat">Loading platform stats…</p>
         </div>
-
-        <div class="action-grid">
-            <a href="manage_users.html" style="text-decoration: none; display: contents;">
-                <div class="action-card">
-                    <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=300&auto=format&fit=crop"
-                         alt="Manage Users" class="action-img">
-                    <p>Manage Users</p>
-                </div>
-            </a>
-            <a href="moderate_listings.html" style="text-decoration: none; display: contents;">
-                <div class="action-card">
-                    <img src="https://images.unsplash.com/photo-1586771107445-d3ca888129ff?q=80&w=300&auto=format&fit=crop"
-                         alt="Moderate Listings" class="action-img">
-                    <p>Moderate Listings</p>
-                </div>
-            </a>
-            <!-- FIX: disputes.html now exists -->
-            <a href="disputes.html" style="text-decoration: none; display: contents;">
-                <div class="action-card">
-                    <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=300&auto=format&fit=crop"
-                         alt="Disputes" class="action-img">
-                    <p>Resolve Disputes</p>
-                </div>
-            </a>
-            <!-- FIX: system_logs.html now exists instead of alert() -->
-            <a href="system_logs.html" style="text-decoration: none; display: contents;">
-                <div class="action-card">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=300&auto=format&fit=crop"
-                         alt="System Logs" class="action-img">
-                    <p>System Logs</p>
-                </div>
-            </a>
-        </div>
-
-        <div class="recent-alerts">
-            <h3 class="section-title">Critical Alerts</h3>
-            <div id="alerts-container">
-                <!-- FIX: Dynamic alerts injected by JS below -->
-                <div class="alert-item warning">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <div class="alert-text">
-                        <h4>Loading alerts...</h4>
-                        <p>Fetching live system data.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <script type="module">
-        import { initializeDashboard } from '../shared/auth-helper.js';
-        import { initializeNotifications } from '../shared/notifications-manager.js';
-        import { supabase } from '../supabase-config.js';
+    <!-- Live DB stat cards — clicking navigates to the relevant page -->
+    <div class="live-stats-grid">
+        <div class="stat-card" onclick="location.href='manage_users.html'" title="Go to User Management">
+            <div class="stat-num" id="count-users"><div class="skeleton"></div></div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card orange" onclick="location.href='moderate_listings.html'" title="Go to Moderation">
+            <div class="stat-num" id="count-listings"><div class="skeleton"></div></div>
+            <div class="stat-label">Pending Listings</div>
+        </div>
+        <div class="stat-card red" onclick="location.href='disputes.html'" title="Go to Disputes">
+            <div class="stat-num" id="count-disputes"><div class="skeleton"></div></div>
+            <div class="stat-label">Open Disputes</div>
+        </div>
+    </div>
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            await initializeDashboard('Administrator');
-            await initializeNotifications();
+    <div class="action-grid">
+        <a href="manage_users.html" style="text-decoration:none;display:contents;">
+            <div class="action-card">
+                <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=300&auto=format&fit=crop" alt="Manage Users" class="action-img">
+                <p>Manage Users</p>
+            </div>
+        </a>
+        <a href="moderate_listings.html" style="text-decoration:none;display:contents;">
+            <div class="action-card">
+                <img src="https://images.unsplash.com/photo-1586771107445-d3ca888129ff?q=80&w=300&auto=format&fit=crop" alt="Moderate Listings" class="action-img">
+                <p>Moderate Listings</p>
+            </div>
+        </a>
+        <a href="disputes.html" style="text-decoration:none;display:contents;">
+            <div class="action-card">
+                <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=300&auto=format&fit=crop" alt="Disputes" class="action-img">
+                <p>Resolve Disputes</p>
+            </div>
+        </a>
+        <a href="system_logs.html" style="text-decoration:none;display:contents;">
+            <div class="action-card">
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=300&auto=format&fit=crop" alt="System Logs" class="action-img">
+                <p>System Logs</p>
+            </div>
+        </a>
+    </div>
 
-            // FIX: Fetch live platform statistics (SRS Section 4.1 - Admin Super User view)
-            await loadDashboardStats();
+    <div class="recent-alerts">
+        <h3 class="section-title">Critical Alerts</h3>
+        <div id="alerts-container">
+            <div class="alert-item warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text"><h4>Loading…</h4><p>Fetching live alerts.</p></div>
+            </div>
+        </div>
+    </div>
 
-            console.log("Admin Console: Secure session active.");
-        });
+</div>
 
-        async function loadDashboardStats() {
-            try {
-                // Total users
-                const { count: userCount } = await supabase
-                    .from('profiles')
-                    .select('*', { count: 'exact', head: true });
+<script type="module">
+    /* ── real imports ─────────────────────────────── */
+    import { supabase }                from '../supabase-config.js';
+    import '../shared/toast.js';               // → window.showToast(msg, type)
+    import { initializeDashboard }     from '../shared/auth-helper.js';
+    import { initializeNotifications } from '../shared/notifications-manager.js';
 
-                // Pending (unmoderated) listings
-                const { count: pendingListings } = await supabase
-                    .from('produce')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('status', 'Pending');
+    document.addEventListener('DOMContentLoaded', async () => {
 
-                // Open disputes (SRS FR-1.6: Admin resolves disputes)
-                const { count: openDisputes } = await supabase
-                    .from('disputes')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('status', 'open');
+        /* auth + profile setup */
+        await initializeDashboard('Administrator');
+        await initializeNotifications();
 
-                document.getElementById('count-users').textContent = userCount ?? '–';
-                document.getElementById('count-listings').textContent = pendingListings ?? '–';
-                document.getElementById('count-disputes').textContent = openDisputes ?? '–';
-                document.getElementById('active-users-stat').textContent =
-                    `${userCount ?? '?'} Total Users • ${pendingListings ?? '?'} Listings Pending`;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name, role')
+                .eq('id', user.id)
+                .single();
 
-                // Render dynamic alert for high dispute rate
-                renderAlerts(openDisputes ?? 0, pendingListings ?? 0);
-
-            } catch (err) {
-                console.error('Dashboard stats error:', err);
-                document.getElementById('count-users').textContent = '–';
-                document.getElementById('count-listings').textContent = '–';
-                document.getElementById('count-disputes').textContent = '–';
-                document.getElementById('active-users-stat').textContent = 'Could not load stats.';
+            if (profile) {
+                document.getElementById('admin-name').textContent = profile.full_name || 'Admin';
+                /* hard guard — non-admins redirected out */
+                if (profile.role !== 'admin') {
+                    window.showToast('Access denied — admin only.', 'error');
+                    setTimeout(() => location.href = '../index.html', 1500);
+                    return;
+                }
             }
         }
 
-        function renderAlerts(disputes, pending) {
-            const container = document.getElementById('alerts-container');
-            const alerts = [];
+        await loadStats();
+    });
 
-            if (disputes > 2) {
-                alerts.push(`
-                    <div class="alert-item warning">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <div class="alert-text">
-                            <h4>High Dispute Rate</h4>
-                            <p>${disputes} open disputes require resolution.</p>
-                        </div>
-                    </div>`);
-            }
-            if (pending > 5) {
-                alerts.push(`
-                    <div class="alert-item warning">
-                        <i class="fa-solid fa-hourglass-half"></i>
-                        <div class="alert-text">
-                            <h4>Listings Pending Review</h4>
-                            <p>${pending} listings awaiting moderation.</p>
-                        </div>
-                    </div>`);
-            }
-            alerts.push(`
-                <div class="alert-item success">
-                    <i class="fa-solid fa-check-circle"></i>
-                    <div class="alert-text">
-                        <h4>System Update</h4>
-                        <p>Server patching completed successfully.</p>
-                    </div>
-                </div>`);
+    async function loadStats() {
+        try {
+            const [usersRes, listingsRes, disputesRes] = await Promise.all([
+                supabase.from('profiles').select('*', { count: 'exact', head: true }),
+                supabase.from('produce') .select('*', { count: 'exact', head: true }).eq('status','Pending'),
+                supabase.from('disputes').select('*', { count: 'exact', head: true }).eq('status','open'),
+            ]);
 
-            container.innerHTML = alerts.join('');
+            if (usersRes.error)    throw usersRes.error;
+            if (listingsRes.error) throw listingsRes.error;
+            if (disputesRes.error) throw disputesRes.error;
+
+            const u = usersRes.count    ?? 0;
+            const l = listingsRes.count ?? 0;
+            const d = disputesRes.count ?? 0;
+
+            document.getElementById('count-users').textContent    = u;
+            document.getElementById('count-listings').textContent = l;
+            document.getElementById('count-disputes').textContent = d;
+            document.getElementById('active-users-stat').textContent =
+                `${u} Total Users  •  ${l} Listings Pending`;
+
+            buildAlerts(d, l);
+
+        } catch (err) {
+            console.error('Stats error:', err);
+            ['count-users','count-listings','count-disputes'].forEach(id =>
+                document.getElementById(id).textContent = '–');
+            document.getElementById('active-users-stat').textContent = 'Could not load stats.';
+            window.showToast('Failed to load stats.', 'error');
         }
-    </script>
+    }
+
+    function buildAlerts(disputes, pending) {
+        const rows = [];
+        if (disputes > 2) rows.push(`
+            <div class="alert-item warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text"><h4>High Dispute Rate</h4>
+                    <p>${disputes} open disputes require resolution.</p></div>
+            </div>`);
+        if (pending > 5) rows.push(`
+            <div class="alert-item warning">
+                <i class="fa-solid fa-hourglass-half"></i>
+                <div class="alert-text"><h4>Listings Pending Review</h4>
+                    <p>${pending} listings awaiting moderation.</p></div>
+            </div>`);
+        rows.push(`
+            <div class="alert-item success">
+                <i class="fa-solid fa-check-circle"></i>
+                <div class="alert-text"><h4>System Update</h4>
+                    <p>Server patching completed successfully.</p></div>
+            </div>`);
+        document.getElementById('alerts-container').innerHTML = rows.join('');
+    }
+</script>
 </body>
 </html>
