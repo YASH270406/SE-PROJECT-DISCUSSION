@@ -3,67 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KisanSetu | Booking Requests</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>KisanSetu | Request Inbox</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="equipment_dashboard_style.css">
     <link rel="stylesheet" href="../shared/common.css">
-    <style>
-        .fleet-container { padding: 20px; }
-        .empty-state { text-align: center; margin-top: 50px; color: #666; }
-        .empty-state i { font-size: 5rem; color: #ef6c00; opacity: 0.2; margin-bottom: 20px; }
-        
-        .request-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .request-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .req-header { display: flex; justify-content: space-between; border-bottom: 1px solid #f5f5f5; padding-bottom: 15px; margin-bottom: 15px; }
-        .farmer-info { display: flex; align-items: center; gap: 10px; }
-        .farmer-avatar { width: 40px; height: 40px; background: #fff3e0; color: #e65100; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-        
-        .req-details { font-size: 0.85rem; color: #555; margin-bottom: 15px; }
-        .req-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .urgency-badge { font-size: 0.7rem; font-weight: 700; color: #d32f2f; background: #ffebee; padding: 2px 8px; border-radius: 4px; }
-        
-        .btn-reject { flex: 1; padding: 10px; background: #fff; color: #d32f2f; border: 1px solid #ffcdd2; border-radius: 8px; font-weight: 600; cursor: pointer; }
-
-        /* Tabs */
-        .tab-bar { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .tab-item { padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: #666; transition: 0.2s; }
-        .tab-item.active { background: #ef6c00; color: white; }
-        .status-badge { font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; margin-left: auto; }
-        .status-Approved { background: #e8f5e9; color: #2e7d32; }
-        .status-Rejected { background: #ffebee; color: #c62828; }
-        .status-Completed { background: #eceff1; color: #455a64; }
-
-    </style>
+    <link rel="stylesheet" href="booking_requests_style.css">
 </head>
 <body>
-    <div class="app-container">
-        
-        <header class="dashboard-header" style="background: linear-gradient(135deg, #ef6c00, #fb8c00); color: white; padding: 25px 20px;">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <a href="equipment_dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
-                <div>
-                    <h1 style="font-size: 1.5rem;">Booking Requests</h1>
-                    <p style="font-size: 0.85rem; opacity: 0.9;">Accept or Manage Rental Orders</p>
-                </div>
-            </div>
-        <div class="fleet-container">
-            <div class="tab-bar">
-                <div class="tab-item active" id="tab-new" onclick="window.switchTab('Pending')">New Requests</div>
-                <div class="tab-item" id="tab-history" onclick="window.switchTab('History')">History</div>
-            </div>
-
-            <div id="request-grid" class="request-grid">
-                <!-- Requests injected here -->
-            </div>
-
-            <div id="empty-state" class="empty-state">
-                <i class="fa-solid fa-list-check"></i>
-                <h3>No Pending Requests</h3>
-                <p>When farmers request to rent your equipment, they will appear here.</p>
-            </div>
+    <header class="hero-header">
+        <div class="header-top">
+            <a href="equipment_dashboard.html" style="color:white; font-size:1.5rem;"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>Request Inbox <span class="header-badge" id="req-count">0</span></h1>
         </div>
+        <p>Review rental requests, check scheduled durations, and approve or decline based on your fleet's availability.</p>
+    </header>
 
+    <nav class="tab-navigation">
+        <div class="tab-bar">
+            <button class="tab-btn active" id="tab-new" onclick="window.switchTab('Pending')">
+                <i class="fa-solid fa-bolt"></i> New Requests
+            </button>
+            <button class="tab-btn" id="tab-history" onclick="window.switchTab('History')">
+                <i class="fa-solid fa-clock-rotate-left"></i> History
+            </button>
+        </div>
+    </nav>
+
+    <div class="inbox-container">
+        <!-- JS will render request-cards here -->
+        <div id="request-grid"></div>
+
+        <div class="empty-inbox" id="empty-state" style="display:none">
+            <i class="fa-solid fa-inbox"></i>
+            <h3>No requests found</h3>
+            <p>New rental requests from farmers will appear here automatically.</p>
+        </div>
     </div>
 
     <script type="module" src="booking_requests.js"></script>

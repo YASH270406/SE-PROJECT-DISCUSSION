@@ -63,7 +63,11 @@ async function loadRequests(mode = 'Pending') {
 function renderRequests(requests) {
     const grid = document.getElementById('request-grid');
     const emptyState = document.getElementById('empty-state');
+    const countBadge = document.getElementById('req-count');
+    
+    if (!grid) return;
     grid.innerHTML = '';
+    if (countBadge) countBadge.textContent = requests.length;
 
     if (requests.length === 0) {
         emptyState.style.display = 'block';
@@ -77,7 +81,6 @@ function renderRequests(requests) {
         const end = new Date(req.end_date);
         const hours = Math.ceil((end - start) / (1000 * 60 * 60));
         
-        // Urgency check (FR-4.4 - 24hr window)
         const createdOn = new Date(req.created_at);
         const hoursSinceCreated = (new Date() - createdOn) / (1000 * 60 * 60);
         const isUrgent = currentMode === 'Pending' && hoursSinceCreated >= 18; 
@@ -85,45 +88,46 @@ function renderRequests(requests) {
         const card = document.createElement('div');
         card.className = 'request-card';
         card.innerHTML = `
-            <div class="req-header">
+            <div class="card-header">
                 <div class="farmer-info">
                     <div class="farmer-avatar">${req.farmer?.full_name?.charAt(0) || 'F'}</div>
-                    <div>
-                        <h4 style="margin:0;">${req.farmer?.full_name || 'Anonymous Farmer'}</h4>
-                        <p style="font-size:0.75rem; color:#888; margin:0;">Request #${req.id.substring(0,8)}</p>
+                    <div class="farmer-name">
+                        <h4>${req.farmer?.full_name || 'Verified Farmer'}</h4>
+                        <p>${isUrgent ? '🕒 Urgent Request' : '📧 New Request'}</p>
                     </div>
                 </div>
-                ${isUrgent ? '<span class="urgency-badge">Urgent: < 6h left</span>' : ''}
-                ${currentMode === 'History' ? `<span class="status-badge status-${req.status}">${req.status}</span>` : ''}
+                <span class="status-badge status-${req.status}">${req.status}</span>
             </div>
 
-            <div class="req-details">
-                <div class="req-row">
-                    <span>Machine:</span>
-                    <strong>${req.equipment.name}</strong>
+            <div class="details-grid">
+                <div class="detail-row">
+                    <span class="detail-label">Machine</span>
+                    <span class="detail-value">${req.equipment.name}</span>
                 </div>
-                <div class="req-row">
-                    <span>Duration:</span>
-                    <strong>${hours} Hours</strong>
+                <div class="detail-row">
+                    <span class="detail-label">Duration</span>
+                    <span class="detail-value">${hours} Hours Total</span>
                 </div>
-                <div class="req-row">
-                    <span>From:</span>
-                    <strong>${start.toLocaleString()}</strong>
+                <div class="detail-row">
+                    <span class="detail-label">Dates</span>
+                    <span class="detail-value">${start.toLocaleDateString()} - ${end.toLocaleDateString()}</span>
                 </div>
-                <div class="req-row">
-                    <span>To:</span>
-                    <strong>${end.toLocaleString()}</strong>
-                </div>
-                <div class="req-row" style="margin-top:10px; border-top:1px dashed #eee; padding-top:10px;">
-                    <span style="font-weight:600;">Est. Earnings:</span>
-                    <strong style="color:var(--primary-green); font-size:1.1rem;">₹${req.total_cost.toLocaleString('en-IN')}</strong>
+                <div class="highlight-row">
+                    <div class="detail-row">
+                        <span class="detail-label" style="color:var(--primary-green)">EST. EARNINGS</span>
+                        <span class="earning-val">₹${req.total_cost.toLocaleString('en-IN')}</span>
+                    </div>
                 </div>
             </div>
 
             ${currentMode === 'Pending' ? `
-                <div class="action-row" style="display:flex; gap:10px;">
-                    <button class="btn-approve" onclick="window.updateStatus('${req.id}', 'Approved')">Approve</button>
-                    <button class="btn-reject" onclick="window.updateStatus('${req.id}', 'Rejected')">Reject</button>
+                <div class="bid-actions">
+                    <button class="btn-approve" onclick="window.updateStatus('${req.id}', 'Approved')">
+                        <i class="fa-solid fa-check"></i> Approve
+                    </button>
+                    <button class="btn-reject" onclick="window.updateStatus('${req.id}', 'Rejected')">
+                        <i class="fa-solid fa-xmark"></i> Decline
+                    </button>
                 </div>
             ` : ''}
         `;
