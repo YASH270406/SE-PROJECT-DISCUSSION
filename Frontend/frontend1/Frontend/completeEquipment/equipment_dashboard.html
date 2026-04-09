@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KisanSetu | Equipment Owner Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="equipment_dashboard_style.css">
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- ══ HEADER — session name/location wired ══ -->
+    <header class="dashboard-header">
+        <div class="user-info">
+            <div class="avatar-wrap">
+                <img src="https://via.placeholder.com/50?text=BS"
+                     alt="Profile" class="profile-pic"
+                     onerror="this.src='https://via.placeholder.com/50?text=BS'">
+                <span class="owner-badge"><i class="fa-solid fa-tractor"></i></span>
+            </div>
+            <div>
+                <h2 class="greeting" id="ownerGreeting">Hello, Balram</h2>
+                <p class="location">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span id="ownerLocation">Rohtak, Haryana</span>
+                </p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="notif-bell" onclick="scrollToAlerts()" title="Notifications">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notif-dot" id="notifDot" style="display:none"></span>
+            </div>
+            <div class="sync-status online" id="sync-indicator" onclick="toggleSyncStatus()">
+                <span class="pulse-dot"></span>
+                <span id="sync-label">Online</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ══ EARNINGS WIDGET — live from localStorage ══ -->
+    <div class="earnings-widget" onclick="navigate('rental_calendar_earnings.html')">
+        <div class="earnings-info">
+            <div class="earn-top-row">
+                <div>
+                    <p class="earn-label">This Month's Earnings</p>
+                    <h3 id="dashEarnings">₹ 0</h3>
+                </div>
+                <div class="earn-icon-wrap">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+            <div class="earn-meta-row">
+                <span id="dashRentals"><i class="fa-solid fa-tractor"></i> — rentals</span>
+                <span id="dashAssets"><i class="fa-solid fa-layer-group"></i> — assets rented</span>
+                <span class="earn-tap-hint">Tap for report →</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ FLEET QUICK STATS ══ -->
+    <div class="quick-stats" id="quickStats">
+        <div class="qs-item">
+            <span class="qs-num green" id="qsAvail">0</span>
+            <span class="qs-lbl">Available</span>
+        </div>
+        <div class="qs-div"></div>
+        <div class="qs-item">
+            <span class="qs-num yellow" id="qsRented">0</span>
+            <span class="qs-lbl">Rented</span>
+        </div>
+        <div class="qs-div"></div>
+        <div class="qs-item">
+            <span class="qs-num red" id="qsMaint">0</span>
+            <span class="qs-lbl">Maintenance</span>
+        </div>
+        <div class="qs-div"></div>
+        <div class="qs-item">
+            <span class="qs-num blue" id="qsPending">0</span>
+            <span class="qs-lbl">Pending Req.</span>
+        </div>
+    </div>
+
+    <!-- ══ ACTION GRID — all 4 tiles wired ══ -->
+    <div class="action-grid">
+
+        <!-- Tile 1: Manage Fleet → manage_fleet.html -->
+        <div class="action-card" onclick="navigate('manage_fleet.html')"
+             role="link" aria-label="Manage Fleet">
+            <div class="action-bg fleet-bg">
+                <i class="tile-icon fa-solid fa-tractor"></i>
+            </div>
+            <div class="action-label-wrap">
+                <p class="action-label">Manage Fleet</p>
+                <span class="action-count" id="tileFleetCount"></span>
+            </div>
+            <div class="tile-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </div>
+
+        <!-- Tile 2: Booking Requests → booking_requests.html -->
+        <div class="action-card" onclick="navigate('booking_requests.html')"
+             role="link" aria-label="Booking Requests">
+            <div class="action-bg bookings-bg">
+                <i class="tile-icon fa-solid fa-clipboard-list"></i>
+            </div>
+            <div class="action-label-wrap">
+                <p class="action-label">Booking Requests</p>
+                <span class="action-count pending-count" id="tileBookingCount"></span>
+            </div>
+            <div class="tile-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </div>
+
+        <!-- Tile 3: Rental Calendar → rental_calendar_earnings.html -->
+        <div class="action-card" onclick="navigate('rental_calendar_earnings.html')"
+             role="link" aria-label="Rental Calendar">
+            <div class="action-bg calendar-bg">
+                <i class="tile-icon fa-regular fa-calendar-days"></i>
+            </div>
+            <div class="action-label-wrap">
+                <p class="action-label">Rental Calendar</p>
+                <span class="action-count" id="tileCalCount"></span>
+            </div>
+            <div class="tile-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </div>
+
+        <!-- Tile 4: Earnings Report → rental_calendar_earnings.html (earnings tab) -->
+        <div class="action-card" onclick="navigateToEarnings()"
+             role="link" aria-label="Earnings Report">
+            <div class="action-bg earnings-bg">
+                <i class="tile-icon fa-solid fa-chart-bar"></i>
+            </div>
+            <div class="action-label-wrap">
+                <p class="action-label">Earnings Report</p>
+                <span class="action-count" id="tileEarnCount"></span>
+            </div>
+            <div class="tile-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+        </div>
+
+    </div>
+
+    <!-- ══ RECENT ALERTS — dynamically populated ══ -->
+    <div class="recent-alerts" id="alertsSection">
+        <div class="section-header-row">
+            <h3 class="section-title">Action Required</h3>
+            <button class="see-all-btn" onclick="navigate('booking_requests.html')">
+                See All <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+        <div id="alertsList">
+            <!-- injected by JS -->
+        </div>
+    </div>
+
+    <!-- ══ RECENT ACTIVITY — from completed/confirmed requests ══ -->
+    <div class="recent-activity">
+        <h3 class="section-title">Recent Activity</h3>
+        <div id="activityList">
+            <!-- injected by JS -->
+        </div>
+    </div>
+
+    <!-- ══ ADD EQUIPMENT FAB ══ -->
+    <button class="voice-fab" id="add-equip-btn" onclick="navigate('manage_fleet.html')"
+            title="Add Equipment">
+        <i class="fa-solid fa-plus" style="font-size:26px; color:#37474f;"></i>
+    </button>
+
+</div><!-- /app-container -->
+
+<!-- ══ TOAST ══ -->
+<div class="dash-toast" id="dashToast">
+    <span id="dashToastIcon">✅</span>
+    <div>
+        <strong id="dashToastTitle"></strong>
+        <p id="dashToastMsg"></p>
+    </div>
+</div>
+
+<script src="equipment_dashboard.js"></script>
+</body>
+</html>

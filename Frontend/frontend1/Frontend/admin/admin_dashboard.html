@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KisanSetu | Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="admin_dashboard_style.css">
+    <link rel="stylesheet" href="../shared/common.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <header class="dashboard-header">
+            <div class="user-info">
+                <img src="../images/logo.jpeg" alt="Admin Profile" class="profile-pic"
+                    onerror="this.src='https://placehold.co/50?text=Admin'">
+                <div>
+                    <h2 class="greeting">Super User</h2>
+                    <p class="location"><i class="fa-solid fa-shield-halved"></i> Global Administrator</p>
+                </div>
+            </div>
+            <!-- Auth Helper will inject Logout Button here -->
+        </header>
+
+
+        <div class="stats-widget">
+            <div class="stats-info">
+                <h3>99.9% <i class="fa-solid fa-server" style="font-size: 1.2rem; margin-left: 10px;"></i></h3>
+                <p>System Uptime • 12K+ Active Users</p>
+            </div>
+        </div>
+
+        <div class="action-grid">
+            <a href="manage_users.html" style="text-decoration: none; display: contents;">
+                <div class="action-card">
+                    <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=300&auto=format&fit=crop" 
+                         alt="Manage Users" class="action-img">
+                    <p>Manage Users</p>
+                </div>
+            </a>
+            <a href="moderate_listings.html" style="text-decoration: none; display: contents;">
+                <div class="action-card">
+                    <img src="https://images.unsplash.com/photo-1586771107445-d3ca888129ff?q=80&w=300&auto=format&fit=crop" 
+                         alt="Moderate Listings" class="action-img">
+                    <p>Moderate Listings</p>
+                </div>
+            </a>
+            <a href="disputes.html" style="text-decoration: none; display: contents;">
+                <div class="action-card">
+                    <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=300&auto=format&fit=crop" 
+                         alt="Disputes" class="action-img">
+                    <p>Resolve Disputes</p>
+                </div>
+            </a>
+            <a href="#" style="text-decoration: none; display: contents;" onclick="alert('System Logs coming soon!')">
+                <div class="action-card">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=300&auto=format&fit=crop" 
+                         alt="System Logs" class="action-img">
+                    <p>System Logs</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="recent-alerts">
+            <h3 class="section-title">Critical Alerts</h3>
+            <div class="alert-item warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text">
+                    <h4>High Dispute Rate</h4>
+                    <p>3 new disputes reported in Rohtak Mandi.</p>
+                </div>
+            </div>
+            <div class="alert-item success">
+                <i class="fa-solid fa-check-circle"></i>
+                <div class="alert-text">
+                    <h4>System Update</h4>
+                    <p>Server patching completed successfully.</p>
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+    </div>
+
+    <script type="module" src="admin_dashboard.js"></script>
+</body>
+
+</html>
