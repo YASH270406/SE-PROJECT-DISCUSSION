@@ -595,7 +595,7 @@ function initVoiceInterface() {
 
         } else if (command.includes('admin') || command.includes('व्यवस्थापक')) {
             showToast('Going to Admin Dashboard...', 'success');
-            setTimeout(() => { window.location.href = 'admin/admin_dashboard.html'; }, 600);
+            setTimeout(() => { window.location.href = 'admin2/admin_dashboard.html'; }, 600);
 
         } else {
             const displayCmd = event.results[0][0].transcript;
@@ -734,7 +734,7 @@ function routeByRole(role, name) {
         } else if (role === 'Equipment Owner') {
             window.location.href = 'equipment_owner/equipment_dashboard.html';
         } else if (role === 'Administrator') {
-            window.location.href = 'admin/admin_dashboard.html';
+            window.location.href = 'admin2/admin_dashboard.html';
         } else {
             showToast('Unknown role. Please contact the administrator.', 'error');
         }
@@ -906,7 +906,7 @@ window.handleLoginOTP = handleLoginOTP;
 function selectRole(roleName) {
     if (roleName === 'Farmer') window.location.href = 'farmer/farmer_dashboard.html';
     else if (roleName === 'Buyer') window.location.href = 'buyer/buyer_dashboard.html';
-    else if (roleName === 'Administrator') window.location.href = 'admin/admin_dashboard.html';
+    else if (roleName === 'Administrator') window.location.href = 'admin2/admin_dashboard.html';
     else if (roleName === 'Equipment Owner') window.location.href = 'equipment_owner/equipment_dashboard.html';
 }
 window.selectRole = selectRole;

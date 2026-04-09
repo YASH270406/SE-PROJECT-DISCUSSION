@@ -19,6 +19,8 @@
         position: relative;
         overflow: hidden;
     }
+    
+    
     .welcome-banner::after {
         content: '🌾';
         position: absolute;
@@ -79,10 +81,9 @@
 <body>
 <div class="shell">
 
-<!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="sidebar-brand">
-        <div class="brand-icon">🌾</div>
+        <img src="../images/logo.jpeg" alt="KisanSetu Logo" style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
         <div class="brand-text">
             <h2>KisanSetu</h2>
             <span>Admin Console</span>
@@ -122,7 +123,6 @@
     </div>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
     <header class="topbar">
         <div class="topbar-left">
@@ -141,7 +141,6 @@
 
     <div class="page-content">
 
-        <!-- Welcome banner -->
         <div class="welcome-banner">
             <div>
                 <h2>Welcome back, Super Admin 👋</h2>
@@ -153,7 +152,6 @@
             </div>
         </div>
 
-        <!-- Stats row -->
         <div class="stats-row">
             <a class="stat-card" href="manage_users.html">
                 <div class="stat-icon green"><i class="fa-solid fa-users"></i></div>
@@ -189,7 +187,6 @@
             </div>
         </div>
 
-        <!-- Quick actions -->
         <div class="section-header"><h3 class="section-title">Quick Actions</h3></div>
         <div class="quick-actions">
             <a class="qa-card" href="manage_users.html">
@@ -216,7 +213,6 @@
 
         <div class="two-col">
 
-            <!-- Recent Activity -->
             <div class="card">
                 <div class="card-header">
                     <span class="section-title">Recent Activity</span>
@@ -225,7 +221,6 @@
                 <div id="activity-list"></div>
             </div>
 
-            <!-- System Health -->
             <div class="card">
                 <div class="card-header">
                     <span class="section-title">System Health</span>
@@ -270,7 +265,6 @@
                         <span class="badge badge-green">Operational</span>
                     </div>
 
-                    <!-- Uptime segments -->
                     <div style="margin-top:14px;">
                         <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">30-day uptime</div>
                         <div class="uptime-bar" id="uptime-bar"></div>
@@ -282,17 +276,12 @@
             </div>
         </div>
 
-        <!-- Critical Alerts -->
         <div class="section-header"><h3 class="section-title">Critical Alerts</h3></div>
         <div class="card" style="margin-bottom:26px;">
             <div id="alerts-container"></div>
         </div>
 
-    </div><!-- /page-content -->
-</div><!-- /main -->
-</div><!-- /shell -->
-
-<script src="admin_shared.js"></script>
+    </div></div></div><script src="admin_shared.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 

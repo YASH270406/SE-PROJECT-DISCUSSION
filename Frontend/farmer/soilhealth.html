@@ -6,6 +6,68 @@
     <title>KisanSetu - Soil Health & Schemes Hub</title>
     <link rel="stylesheet" href="soilhealth.css">
     <link rel="stylesheet" href="../shared/common.css">
+    <style>
+    .voice-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 20px;
+        gap: 8px;
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 999999;
+    }
+
+    .voice-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2e7d32, #66bb6a);
+        border: none;
+        color: white;
+        font-size: 1.4rem;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .voice-btn:active {
+        transform: scale(0.92);
+        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+    }
+
+    .voice-btn.listening {
+        animation: micPulse 1s infinite;
+        background: linear-gradient(135deg, #d32f2f, #ef5350);
+    }
+
+    @keyframes micPulse {
+        0%   { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.5); }
+        70%  { box-shadow: 0 0 0 12px rgba(211, 47, 47, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+    }
+
+    .voice-hint {
+        font-size: 0.78rem;
+        color: #78909c;
+        font-family: 'Poppins', sans-serif;
+        text-align: center;
+        margin: 0;
+    }
+</style>
+
+<div class="voice-section">
+    <button class="voice-btn" id="global-mic-icon" onclick="toggleGlobalVoice()" title="Tap to speak">
+        <i class="fa-solid fa-microphone"></i>
+    </button>
+    <p class="voice-hint">🎙️ बोलकर नेविगेट करें &nbsp;|&nbsp; Speak to navigate</p>
+</div>
+
 </head>
 
 <body>
@@ -174,5 +236,6 @@
         </div>
     </div>
     <script src="soilhealth.js" type="module"></script>
+    <script src="../shared/global.js"></script>
 </body>
 </html>
